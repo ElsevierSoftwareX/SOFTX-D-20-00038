@@ -1,13 +1,7 @@
-#from functools import reduce
 import os
 import importlib
 
 import torch
-
-# Needed by initialize_net function:
-#import asvtorch  # pylint: disable=unused-import
-#import asvtorch.src.networks.architectures  # pylint: disable=unused-import
-# If architectures are defined somewhere else, import those modules also
 
 from asvtorch.src.settings.settings import Settings
 import asvtorch.src.misc.fileutils as fileutils
