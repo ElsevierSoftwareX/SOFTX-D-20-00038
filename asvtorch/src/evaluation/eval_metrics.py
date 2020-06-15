@@ -16,6 +16,8 @@ def _get_tar_and_nontar_scores(scores: np.ndarray, labels: List[str], tar_label:
     else:
         nontar_labels = set([nontar_label])
 
+    #print(labels[0])
+
     target_scores = []
     nontarget_scores = []
     for index, score in enumerate(scores):
@@ -51,6 +53,9 @@ def compute_eer(scores: np.ndarray, labels: List[str], tar_label: str = None, no
     """ Returns equal error rate (EER) and the corresponding threshold. """
     target_scores, nontarget_scores = _get_tar_and_nontar_scores(scores, labels, tar_label, nontar_label)
     print('{} target and {} non-target scores'.format(target_scores.size, nontarget_scores.size))
+    return _compute_eer(target_scores, nontarget_scores)
+
+def _compute_eer(target_scores: np.ndarray, nontarget_scores: np.ndarray):
     frr, far, thresholds = _compute_det_curve(target_scores, nontarget_scores)
     abs_diffs = np.abs(frr - far)
     min_index = np.argmin(abs_diffs)
@@ -59,6 +64,10 @@ def compute_eer(scores: np.ndarray, labels: List[str], tar_label: str = None, no
 
 def compute_min_dcf(scores: np.ndarray, labels: List[str], p_target: float, c_miss: float, c_fa: float, tar_label: str = None, nontar_label: str = None):
     target_scores, nontarget_scores = _get_tar_and_nontar_scores(scores, labels, tar_label, nontar_label)
+    frr, far, thresholds = _compute_det_curve(target_scores, nontarget_scores)
+    return _compute_min_dcf(frr, far, thresholds, p_target, c_miss, c_fa)
+
+def _compute_min_dcf_tar_nontar(target_scores: np.ndarray, nontarget_scores: np.ndarray, p_target: float, c_miss: float, c_fa: float):
     frr, far, thresholds = _compute_det_curve(target_scores, nontarget_scores)
     return _compute_min_dcf(frr, far, thresholds, p_target, c_miss, c_fa)
 
@@ -82,7 +91,7 @@ def _icdf(x):
     return x
 
 def _prepare_det_plot(ticks, limits):
-    tick_labels = [str(x) for x in (ticks*100).tolist()]
+    tick_labels = ['{0:g}'.format(float(x)) for x in (ticks*100).tolist()]
     ticks = _icdf(ticks)
     limits = _icdf(limits)
     return ticks, tick_labels, limits
@@ -93,41 +102,55 @@ def _convert_rates(frr, far):
     return frr, far
 
 
-def det_plot(scores: np.ndarray, labels: List[str], p_target: float, c_miss: float, c_fa: float, tar_label: str = None, nontar_label: str = None):
 
-        # Change these based on your needs:
-    ticks = np.array([0.0001, 0.0002, 0.0005, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.4])
-    limits = np.array([0.001, 0.5])
+class DetPlot():
 
-    ticks, tick_labels, limits = _prepare_det_plot(ticks, limits)
+    def __init__(self, ticks: List[float] = None, axis_min: float = 0.001, axis_max: float = 0.5, **fig_kwargs):
+        self.target_scores = None
+        self.nontarget_scores = None
+        if not ticks:
+            ticks = np.array([0.0001, 0.0002, 0.0005, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.4])
+        else:
+            ticks = np.asarray(ticks)
+        limits = np.asarray([axis_min, axis_max])
+        self.figure = plt.figure(**fig_kwargs)
+        plt.xlabel('False Acceptance Rate (FAR) [%]')
+        plt.ylabel('False Rejection Rate (FRR) [%]')
+        ticks, tick_labels, limits = _prepare_det_plot(ticks, limits)
+        plt.xticks(ticks, tick_labels)
+        plt.yticks(ticks, tick_labels)
+        plt.axis('square')
+        plt.xlim(limits)
+        plt.ylim(limits)
+        plt.grid(color='lightgray', linestyle='--', linewidth=0.5)
+        diag_line = np.asarray([0, 0.99])
+        diag_line = _convert_rates(diag_line, diag_line)[0]
+        plt.plot(diag_line, diag_line, color='lightgray', linestyle='--', linewidth=0.5)
 
-    target_scores, nontarget_scores = _get_tar_and_nontar_scores(scores, labels, tar_label, nontar_label)
+    def set_scores_and_labels(self, scores: np.ndarray, labels: List[str], tar_label: str = None, nontar_label: str = None):
+        self.target_scores, self.nontarget_scores = _get_tar_and_nontar_scores(scores, labels, tar_label, nontar_label)
 
-    frr, far, thresholds = _compute_det_curve(target_scores, nontarget_scores)
+    def plot_det_curve(self, **plt_kwargs):
+        plt.figure(self.figure.number)
+        frr, far, _ = _compute_det_curve(self.target_scores, self.nontarget_scores)
+        frr, far = _convert_rates(frr, far)
+        plt.plot(far, frr, **plt_kwargs)
 
-    eer = compute_eer(target_scores, nontarget_scores)[0]
-    min_dcf_threshold = compute_min_dcf(target_scores, nontarget_scores, p_target, c_miss, c_fa)[1]
-    idx = (np.abs(thresholds - min_dcf_threshold)).argmin()
-    eer = _icdf(eer)
+    def plot_eer(self, **plt_kwargs):
+        plt.figure(self.figure.number)
+        eer = _compute_eer(self.target_scores, self.nontarget_scores)[0]
+        eer = _icdf(eer)
+        if 'marker' not in plt_kwargs:
+            plt_kwargs['marker'] = 'o'
+        plt.plot(eer, eer, **plt_kwargs)
 
-    print(idx, far[idx], frr[idx])
-    frr, far = _convert_rates(frr, far)
+    def plot_min_dcf(self, p_target: float, c_miss: float, c_fa: float, **plt_kwargs):
+        plt.figure(self.figure.number)
+        frr, far, thresholds = _compute_det_curve(self.target_scores, self.nontarget_scores)
+        min_dcf_threshold = _compute_min_dcf_tar_nontar(self.target_scores, self.nontarget_scores, p_target, c_miss, c_fa)[1]
+        idx = (np.abs(thresholds - min_dcf_threshold)).argmin()
+        frr, far = _convert_rates(frr, far)
+        if 'marker' not in plt_kwargs:
+            plt_kwargs['marker'] = 'd'
+        plt.plot(far[idx], frr[idx], **plt_kwargs)
 
-    plt.plot(far, frr, linewidth=1)
-    plt.plot(eer, eer, marker='x', markersize=6)
-    plt.plot(far[idx], frr[idx], marker='o', markersize=6)
-
-    plt.xlabel('False Acceptance Rate (FAR) [%]')
-    plt.ylabel('False Rejection Rate (FRR) [%]')
-
-    plt.xticks(ticks, tick_labels)
-    plt.yticks(ticks, tick_labels)
-
-    plt.axis('square')
-
-    plt.xlim(limits)
-    plt.ylim(limits)
-
-    plt.savefig('det_plot.pdf')
-
-    plt.show()
