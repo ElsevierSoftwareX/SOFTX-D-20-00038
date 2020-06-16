@@ -43,11 +43,15 @@ recipe.end_stage = 5
 network.min_clip_size = 200
 network.max_clip_size = 200
 network.print_interval = 500
-network.utts_per_speaker_in_epoch = 1500
 network.weight_decay = 0.001
-network.eer_stop_epochs = 4
-network.max_epochs = 7
-network.learning_rate_schedule = (0.05, 0.02, 0.01, 0.005, 0.002, 0.001, 0.0005, 0.0003, 0.0002, 0.0001, 0.00005)
+network.utts_per_speaker_in_epoch = 150
+network.eer_stop_epochs = 5
+network.max_epochs = 1000
+network.initial_learning_rate = 0.05
+network.min_loss_change_ratio = 0.02
+network.max_consecutive_stagnations = 3
+network.epochs_per_train_call = 10
+#network.learning_rate_schedule = (0.05, 0.02, 0.01, 0.005, 0.002, 0.001, 0.0005, 0.0003, 0.0002, 0.0001, 0.00005)
 network.learning_rate_factor_for_frame_layers = 1
 
 # To train one more epoch afterwards (just for an example):

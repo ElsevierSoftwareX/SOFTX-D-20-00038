@@ -57,6 +57,9 @@ class NetworkSettings(AbstractSettings):
 
     optimizer: str = 'sgd'
 
+    initial_learning_rate: float = 0.05
+    min_loss_change_ratio: float = 0.02
+    max_consecutive_stagnations: int = 3
     learning_rate_schedule: Tuple[float, ...] = (0.05, 0.01, 0.01, 0.01, 0.005, 0.002, 0.001, 0.0005, 0.0003, 0.0002, 0.0001, 0.00005)
     general_learning_rate_factor: float = 1  # Multiply the above values with this one
     learning_rate_factor_for_frame_layers: float = 1  # How many times larger learning rate is given for frame level layers

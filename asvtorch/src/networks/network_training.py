@@ -47,7 +47,6 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0):
 
     criterion = nn.CrossEntropyLoss()
 
-    #Learning rate values here do not matter (they will be changed later by scheduler):
     optimizer = _init_optimizer(net, settings)
 
     log_folder = fileutils.get_network_log_folder()
@@ -66,10 +65,11 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0):
 
         start_time = time.time()
 
-        print('Setting initial learning rates for this epoch...')
-        start_lr, end_lr = _get_learning_rates_for_epoch(epoch + resume_epoch, settings)
-        current_learning_rate = start_lr
-        _update_learning_rate(optimizer, current_learning_rate, settings)
+        #print('Setting initial learning rates for this epoch...')
+        current_learning_rate = optimizer.param_groups[0]['lr']
+        # start_lr, end_lr = _get_learning_rates_for_epoch(epoch + resume_epoch, settings)
+        # current_learning_rate = start_lr
+        # _update_learning_rate(optimizer, current_learning_rate, settings)
 
         logfilename = os.path.join(log_folder, 'epoch.{}.log'.format(epoch + resume_epoch))
         logfile = open(logfilename, 'w')
@@ -81,7 +81,13 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0):
         training_loss = 0
         optimizer.zero_grad()
 
+        # For automatic learning rate scheduling:
+        halfway_index = len(training_dataloader) // 2
+        beginning_losses = []
+        end_losses = []
         print('Iterating over training minibatches...')
+         
+
         for i, batch in enumerate(training_dataloader):
 
             # Copying data to GPU:
@@ -99,11 +105,16 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0):
                 optimizer.zero_grad()
 
             # Updating learning rate:
-            if i % settings.learning_rate_update_interval == settings.learning_rate_update_interval - 1:
-                current_learning_rate = start_lr - (start_lr - end_lr) * i / len(training_dataloader)
-                _update_learning_rate(optimizer, current_learning_rate, settings)
+            #if i % settings.learning_rate_update_interval == settings.learning_rate_update_interval - 1:
+            #    current_learning_rate = start_lr - (start_lr - end_lr) * i / len(training_dataloader)
+            #    _update_learning_rate(optimizer, current_learning_rate, settings)
 
-            training_loss += loss.item() * settings.optimizer_step_interval
+            minibatch_loss = loss.item() * settings.optimizer_step_interval
+            if i <= halfway_index:
+                beginning_losses.append(minibatch_loss)
+            else:
+                end_losses.append(minibatch_loss)
+            training_loss += minibatch_loss
 
             # Computing train and test accuracies and printing status:
             if i % settings.print_interval == settings.print_interval - 1:
@@ -118,21 +129,44 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0):
                 logfile.write(output + '\n')
                 training_loss = 0
 
+        # Learning rate update:
+        beginning_loss = np.asarray(beginning_losses).mean()
+        end_loss = np.asarray(end_losses).mean()
+        loss_change = (beginning_loss - end_loss) / beginning_loss
+        print('Training loss changed {:.1f}% during the last epoch.'.format(loss_change*100))
+        if loss_change < Settings().network.min_loss_change_ratio:
+            for param_group in optimizer.param_groups:
+                param_group['lr'] = param_group['lr']/2
+            print('Because {:.1f}% < {:.1f}%, the learning rate is updated as follows: {} --> {}'.format(loss_change*100, Settings().network.min_loss_change_ratio*100, optimizer.param_groups[0]['lr'] * 2, optimizer.param_groups[0]['lr']))
+            if 'consecutive_stagnations' not in optimizer.state_dict()['state']:
+                optimizer.state_dict()['state']['consecutive_stagnations'] = 1
+            else:
+                optimizer.state_dict()['state']['consecutive_stagnations'] += 1
+                print('Consecutive stagnations = {}'.format(optimizer.state_dict()['state']['consecutive_stagnations']))
+        else:
+            if 'consecutive_stagnations' in optimizer.state_dict()['state']:
+                optimizer.state_dict()['state']['consecutive_stagnations'] = 0
+        
         network_io.save_state(output_filename, epoch + resume_epoch, net, optimizer)
+
+        if 'consecutive_stagnations' in optimizer.state_dict()['state'] and optimizer.state_dict()['state']['consecutive_stagnations'] >= Settings().network.max_consecutive_stagnations:
+            print('{} consecutive stagnations... Stopping training!'.format(Settings().network.max_consecutive_stagnations))
+            return net, True
+
     logfile.close()
-    return net
+    return net, False
 
 
-def _get_learning_rates_for_epoch(epoch, settings):
-    if epoch <= len(settings.learning_rate_schedule):
-        start_lr = settings.learning_rate_schedule[epoch-1]
-    else:
-        start_lr = settings.learning_rate_schedule[-1]
-    if epoch + 1 <= len(settings.learning_rate_schedule):
-        end_lr = settings.learning_rate_schedule[epoch]
-    else:
-        end_lr = settings.learning_rate_schedule[-1]
-    return start_lr, end_lr
+# def _get_learning_rates_for_epoch(epoch, settings):
+#     if epoch <= len(settings.learning_rate_schedule):
+#         start_lr = settings.learning_rate_schedule[epoch-1]
+#     else:
+#         start_lr = settings.learning_rate_schedule[-1]
+#     if epoch + 1 <= len(settings.learning_rate_schedule):
+#         end_lr = settings.learning_rate_schedule[epoch]
+#     else:
+#         end_lr = settings.learning_rate_schedule[-1]
+#     return start_lr, end_lr
 
 
 
@@ -160,28 +194,35 @@ def _select_random_subset(data, n):
     subset_data = UtteranceList([data[i] for i in np.nditer(indices)], name='training_subset')
     return subset_data
 
-def _update_learning_rate(optimizer, learning_rate, settings):
-    optimizer.param_groups[0]['lr'] = learning_rate * settings.learning_rate_factor_for_frame_layers * settings.general_learning_rate_factor
-    optimizer.param_groups[1]['lr'] = learning_rate * settings.learning_rate_factor_for_pooling_layer * settings.general_learning_rate_factor
-    optimizer.param_groups[2]['lr'] = learning_rate * settings.general_learning_rate_factor
+# def _update_learning_rate(optimizer, learning_rate, settings):
+#     optimizer.param_groups[0]['lr'] = learning_rate * settings.learning_rate_factor_for_frame_layers * settings.general_learning_rate_factor
+#     optimizer.param_groups[1]['lr'] = learning_rate * settings.learning_rate_factor_for_pooling_layer * settings.general_learning_rate_factor
+#     optimizer.param_groups[2]['lr'] = learning_rate * settings.general_learning_rate_factor
 
 def _init_optimizer(net, settings):
     if settings.optimizer == 'sgd':
-        return optim.SGD([
-            {'params': net.tdnn_layers.parameters(), 'lr': 1},
-            {'params': net.pooling_layer.parameters(), 'lr': 1},
-            {'params': net.utterance_layers.parameters(), 'lr': 1}
-            ], weight_decay=settings.weight_decay, momentum=settings.momentum)
-    if settings.optimizer == 'radam':
-        return optimizers.RAdam([
-            {'params': net.tdnn_layers.parameters(), 'lr': 1},
-            {'params': net.pooling_layer.parameters(), 'lr': 1},
-            {'params': net.utterance_layers.parameters(), 'lr': 1}
-            ], weight_decay=settings.weight_decay)
-    if settings.optimizer == 'rangerqh':
-        return optimizers.RangerQH([
-            {'params': net.tdnn_layers.parameters(), 'lr': 1},
-            {'params': net.pooling_layer.parameters(), 'lr': 1},
-            {'params': net.utterance_layers.parameters(), 'lr': 1}
-            ], weight_decay=settings.weight_decay)
+        return optim.SGD(net.parameters(), lr=settings.initial_learning_rate, weight_decay=settings.weight_decay, momentum=settings.momentum)
     sys.exit('Unsupported optimizer: {}'.format(settings.optimizer))
+
+
+
+# def _init_optimizer(net, settings):
+#     if settings.optimizer == 'sgd':
+#         return optim.SGD([
+#             {'params': net.tdnn_layers.parameters(), 'lr': 1},
+#             {'params': net.pooling_layer.parameters(), 'lr': 1},
+#             {'params': net.utterance_layers.parameters(), 'lr': 1}
+#             ], weight_decay=settings.weight_decay, momentum=settings.momentum)
+#     if settings.optimizer == 'radam':
+#         return optimizers.RAdam([
+#             {'params': net.tdnn_layers.parameters(), 'lr': 1},
+#             {'params': net.pooling_layer.parameters(), 'lr': 1},
+#             {'params': net.utterance_layers.parameters(), 'lr': 1}
+#             ], weight_decay=settings.weight_decay)
+#     if settings.optimizer == 'rangerqh':
+#         return optimizers.RangerQH([
+#             {'params': net.tdnn_layers.parameters(), 'lr': 1},
+#             {'params': net.pooling_layer.parameters(), 'lr': 1},
+#             {'params': net.utterance_layers.parameters(), 'lr': 1}
+#             ], weight_decay=settings.weight_decay)
+#     sys.exit('Unsupported optimizer: {}'.format(settings.optimizer))
