@@ -1,8 +1,9 @@
 # Main script for VoxCeleb/xvector recipe.
 
 import sys
-sys.path.append('.')
 import os
+# Adding the project root to the path to make imports to work regardless from where this file was executed:
+sys.path.append(os.path.dirname(os.path.abspath(__file__)).rsplit('asvtorch', 1)[0])
 os.environ['MKL_NUM_THREADS'] = '1'
 os.environ["NUMEXPR_NUM_THREADS"] = '1'
 os.environ["OMP_NUM_THREADS"] = '1'
