@@ -1,6 +1,6 @@
 import sys
 from dataclasses import dataclass, field
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 
 import torch
 
@@ -26,7 +26,7 @@ class ComputingSettings(AbstractSettings):
     network_dataloader_workers: int = 10
     feature_extraction_workers: int = 44
     use_gpu: bool = True  # If false, then use CPU
-    gpu_id: int = 0  # Which GPU to use?
+    gpu_ids: Tuple[int] = (0)  # Which GPU to use?
     device: torch.device = field(init=False)
 
 
@@ -57,14 +57,16 @@ class NetworkSettings(AbstractSettings):
 
     optimizer: str = 'sgd'
 
+    max_consecutive_lr_updates = 2
     initial_learning_rate: float = 0.05
-    min_loss_change_ratio: float = 0.02
-    max_consecutive_stagnations: int = 3
-    learning_rate_schedule: Tuple[float, ...] = (0.05, 0.01, 0.01, 0.01, 0.005, 0.002, 0.001, 0.0005, 0.0003, 0.0002, 0.0001, 0.00005)
-    general_learning_rate_factor: float = 1  # Multiply the above values with this one
-    learning_rate_factor_for_frame_layers: float = 1  # How many times larger learning rate is given for frame level layers
-    learning_rate_factor_for_pooling_layer: float = 1
-    learning_rate_update_interval: int = 100  # How often learing rates are updated (in minibatches)
+    min_loss_change_ratio: float = 0.01
+    min_room_for_improvement: float = 0.1
+    target_loss: float = 0.4
+    #learning_rate_schedule: Tuple[float, ...] = (0.05, 0.01, 0.01, 0.01, 0.005, 0.002, 0.001, 0.0005, 0.0003, 0.0002, 0.0001, 0.00005)
+    #general_learning_rate_factor: float = 1  # Multiply the above values with this one
+    #learning_rate_factor_for_frame_layers: float = 1  # How many times larger learning rate is given for frame level layers
+    #learning_rate_factor_for_pooling_layer: float = 1
+    #learning_rate_update_interval: int = 100  # How often learing rates are updated (in minibatches)
 
     momentum: float = 0  # (0 to disable)
 
@@ -200,9 +202,9 @@ class Settings(AbstractSettings):
         # Set GPU device
         self.computing.device = torch.device("cpu")
         if torch.cuda.is_available():
-            self.computing.device = torch.device('cuda:{}'.format(self.computing.gpu_id))
+            self.computing.device = torch.device('cuda:{}'.format(self.computing.gpu_ids[0]))
             torch.backends.cudnn.benchmark = False
             #torch.cuda.set_device(1)
-            print('Using GPU (gpu_id = {})!'.format(self.computing.gpu_id))
+            print('Using GPU (gpu_id = {})!'.format(self.computing.gpu_ids[0]))
         else:
             print('Cuda is not available! Using CPU!')

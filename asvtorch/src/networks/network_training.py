@@ -59,6 +59,7 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0):
         print('Resuming network training from epoch {}...'.format(resume_epoch))
         network_io.load_state(output_filename, resume_epoch, net, optimizer, Settings().computing.device)
 
+    #net = nn.DataParallel(net, device_ids=Settings().computing.gpu_ids)
     net.train()
 
     for epoch in range(1, settings.epochs_per_train_call + 1):
@@ -82,9 +83,7 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0):
         optimizer.zero_grad()
 
         # For automatic learning rate scheduling:
-        halfway_index = len(training_dataloader) // 2
-        beginning_losses = []
-        end_losses = []
+        losses = []
         print('Iterating over training minibatches...')
          
 
@@ -110,10 +109,7 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0):
             #    _update_learning_rate(optimizer, current_learning_rate, settings)
 
             minibatch_loss = loss.item() * settings.optimizer_step_interval
-            if i <= halfway_index:
-                beginning_losses.append(minibatch_loss)
-            else:
-                end_losses.append(minibatch_loss)
+            losses.append(minibatch_loss)
             training_loss += minibatch_loss
 
             # Computing train and test accuracies and printing status:
@@ -130,31 +126,30 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0):
                 training_loss = 0
 
         # Learning rate update:
-        beginning_loss = np.asarray(beginning_losses).mean()
-        end_loss = np.asarray(end_losses).mean()
-        loss_change = (beginning_loss - end_loss) / beginning_loss
-        print('Training loss changed {:.1f}% during the last epoch.'.format(loss_change*100))
+        prev_loss = net.training_loss.item()
+        current_loss = np.asarray(losses).mean()
+        room_for_improvement = max(Settings().network.min_room_for_improvement, prev_loss - Settings().network.target_loss)
+        loss_change = (prev_loss - current_loss) / room_for_improvement
+        print('Average training loss reduced {:.2f}% from the previous epoch.'.format(loss_change*100))
         if loss_change < Settings().network.min_loss_change_ratio:
             for param_group in optimizer.param_groups:
                 param_group['lr'] = param_group['lr']/2
-            print('Because {:.1f}% < {:.1f}%, the learning rate is updated as follows: {} --> {}'.format(loss_change*100, Settings().network.min_loss_change_ratio*100, optimizer.param_groups[0]['lr'] * 2, optimizer.param_groups[0]['lr']))
-            if 'consecutive_stagnations' not in optimizer.state_dict()['state']:
-                optimizer.state_dict()['state']['consecutive_stagnations'] = 1
-            else:
-                optimizer.state_dict()['state']['consecutive_stagnations'] += 1
-                print('Consecutive stagnations = {}'.format(optimizer.state_dict()['state']['consecutive_stagnations']))
+            net.consecutive_lr_updates[0] += 1
+            print('Because loss change {:.2f}% <= {:.2f}%, the learning rate is halved: {} --> {}'.format(loss_change*100, Settings().network.min_loss_change_ratio*100, optimizer.param_groups[0]['lr'] * 2, optimizer.param_groups[0]['lr']))
+            print('Consecutive LR updates: {}'.format(net.consecutive_lr_updates[0]))
         else:
-            if 'consecutive_stagnations' in optimizer.state_dict()['state']:
-                optimizer.state_dict()['state']['consecutive_stagnations'] = 0
-        
+            net.consecutive_lr_updates[0] = 0
+
+        net.training_loss[0] = current_loss
         network_io.save_state(output_filename, epoch + resume_epoch, net, optimizer)
 
-        if 'consecutive_stagnations' in optimizer.state_dict()['state'] and optimizer.state_dict()['state']['consecutive_stagnations'] >= Settings().network.max_consecutive_stagnations:
-            print('{} consecutive stagnations... Stopping training!'.format(Settings().network.max_consecutive_stagnations))
-            return net, True
+        if net.consecutive_lr_updates[0] >= Settings().network.max_consecutive_lr_updates:
+            #print('Stopping training because loss did not improve more than {:.3f}% ...'.format(Settings().network.min_loss_change * 100))
+            print('Stopping training because reached {} consecutive LR updates!'.format(Settings().network.max_consecutive_lr_updates))
+            return net, True, epoch + resume_epoch
 
     logfile.close()
-    return net, False
+    return net, False, epoch + resume_epoch
 
 
 # def _get_learning_rates_for_epoch(epoch, settings):

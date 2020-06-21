@@ -115,7 +115,7 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
 
         for epoch in range(Settings().network.resume_epoch, Settings().network.max_epochs, Settings().network.epochs_per_train_call):
 
-            network, stop_flag = network_training.train_network(training_data, epoch)
+            network, stop_flag, epoch = network_training.train_network(training_data, epoch)
 
             extract_embeddings(trial_data, network)
             extract_embeddings(plda_data, network)
@@ -134,7 +134,7 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
                 eer = compute_eer(scores, labels)[0] * 100
                 eer_stopper.add_stopping_eer(eer)
                 min_dcf = compute_min_dcf(scores, labels, 0.05, 1, 1)[0]
-                output_text = 'EER = {:.4f}  minDCF = {:.4f}  [epoch {}] [{}]'.format(eer, min_dcf, epoch + 1, trial_list.trial_list_display_name)
+                output_text = 'EER = {:.4f}  minDCF = {:.4f}  [epoch {}] [{}]'.format(eer, min_dcf, epoch, trial_list.trial_list_display_name)
                 dual_print(result_file, output_text)
             dual_print(result_file, '')
 
