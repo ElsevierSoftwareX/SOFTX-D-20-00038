@@ -3,7 +3,7 @@
 computing.network_dataloader_workers = 10
 computing.feature_extraction_workers = 44
 computing.use_gpu = True
-computing.gpu_ids = (0)
+computing.gpu_id = 0
 
 paths.output_folder = '/media/ssd2/vvestman/voxceleb_outputs'
 paths.feature_and_list_folder = 'datasets'  # No need to update this
