@@ -7,10 +7,10 @@ from asvtorch.src.settings.settings import Settings
 class BaseNet(nn.Module):
     def __init__(self, feat_dim, n_speakers):
         super().__init__()
-        self.feat_dim_param = torch.nn.Parameter(torch.Tensor([feat_dim]), requires_grad=False)
-        self.n_speakers_param = torch.nn.Parameter(torch.Tensor([n_speakers]), requires_grad=False)
+        self.feat_dim_param = torch.nn.Parameter(torch.LongTensor([feat_dim]), requires_grad=False)
+        self.n_speakers_param = torch.nn.Parameter(torch.LongTensor([n_speakers]), requires_grad=False)
         self.training_loss = torch.nn.Parameter(torch.Tensor([torch.finfo().max]), requires_grad=False)
-        self.consecutive_lr_updates = torch.nn.Parameter(torch.Tensor([0]), requires_grad=False)
+        self.consecutive_lr_updates = torch.nn.Parameter(torch.LongTensor([0]), requires_grad=False)
 
 class StandardNetTemplate(BaseNet):
     def __init__(self, feat_dim, n_speakers):
@@ -33,7 +33,7 @@ class StandardNetTemplate(BaseNet):
             return x
 
         # To extract "neural stats" for neural i-vector
-        if forward_mode == 'extract_training_stats' or forward_mode == 'extract_testing_stats':
+        if forward_mode in ('extract_training_stats', 'extract_testing_stats'):
             return self.pooling_layer(x, forward_mode)
 
         x = self.pooling_layer(x)
