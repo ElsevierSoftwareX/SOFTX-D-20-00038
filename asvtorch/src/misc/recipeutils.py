@@ -1,9 +1,19 @@
 from typing import NamedTuple, Iterable
+import os
+import sys
 
 from asvtorch.src.settings.settings import Settings
 from asvtorch.src.utterances.utterance_list import UtteranceList
 from asvtorch.src.utterances.utterance_selector import UtteranceSelector
 import asvtorch.src.misc.fileutils as fileutils
+
+def find_last_epoch():
+    epoch = 1
+    while os.path.exists(os.path.join(fileutils.get_network_folder(), 'epoch.{}.pt'.format(epoch))):
+        epoch += 1
+    if epoch == 1:
+        sys.exit('ERROR: trying to load model that has not been trained yet ({})'.format(os.path.join(fileutils.get_network_folder(), 'epoch.{}.pt'.format(epoch))))
+    return epoch - 1
 
 class TrialList(NamedTuple):
     trial_list_display_name: str  # Name used for the trial list when printing results
