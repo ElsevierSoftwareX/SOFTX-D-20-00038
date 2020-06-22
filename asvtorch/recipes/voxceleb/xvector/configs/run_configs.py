@@ -47,23 +47,12 @@ network.weight_decay = 0.001
 network.utts_per_speaker_in_epoch = 300
 network.eer_stop_epochs = 5
 network.max_epochs = 1000
-network.initial_learning_rate = 0.05
+network.initial_learning_rate = 0.2
 network.min_loss_change_ratio = 0.01
-network.target_loss = 0.9
+network.target_loss = 0.8
 network.epochs_per_train_call = 5
 network.max_batch_size_in_frames = 15000
 network.max_consecutive_lr_updates = 2
-computing.gpu_ids = (0,)
-#network.learning_rate_schedule = (0.05, 0.02, 0.01, 0.005, 0.002, 0.001, 0.0005, 0.0003, 0.0002, 0.0001, 0.00005)
-#network.learning_rate_factor_for_frame_layers = 1
-
-net2 < net
-paths.system_folder = 'full_system_default_2'
-network.initial_learning_rate = 0.2
-
-net3 < net
-paths.system_folder = 'full_system_default_3'
-network.initial_learning_rate = 0.01
 
 # To resume training from a specific epoch:
 net_resume < net
@@ -110,7 +99,7 @@ network.normalize_supervector = True
 emb
 recipe.start_stage = 7
 recipe.end_stage = 7
-recipe.selected_epoch = 7
+recipe.selected_epoch = None  # None = select the last epoch automatically
 network.max_batch_size_in_frames = 30000
 
 # Below are the embedding extraction configs for different networks

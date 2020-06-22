@@ -41,7 +41,7 @@ class RecipeSettings(AbstractSettings):
     preparation_datasets: Optional[List[str]] = None
     feature_extraction_datasets: List[str] = field(default_factory=lambda: [])
     augmentation_datasets: Dict[str, int] = field(default_factory=lambda: {})
-    selected_epoch: int = 5
+    selected_epoch: int = None  # Find the last epoch automatically
 
 # Initializing settings:
 Settings(os.path.join(fileutils.get_folder_of_file(__file__), 'configs', 'init_config.py')) 
@@ -150,7 +150,8 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
 
     # Embedding extraction, stage 7
     if Settings().recipe.start_stage <= 7 <= Settings().recipe.end_stage:
-        network = network_io.load_network(Settings().recipe.selected_epoch, Settings().computing.device)
+        epoch = Settings().recipe.selected_epoch if Settings().recipe.selected_epoch else recipeutils.find_last_epoch()
+        network = network_io.load_network(epoch, Settings().computing.device)
 
         print('Loading trial data...')
         trial_data = recipeutils.get_trial_utterance_list(full_trial_list_list)
@@ -171,6 +172,7 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
 
     # Embedding processing, PLDA training, Scoring, Score normalization, stage 9
     if Settings().recipe.start_stage <= 9 <= Settings().recipe.end_stage:
+        epoch = Settings().recipe.selected_epoch if Settings().recipe.selected_epoch else recipeutils.find_last_epoch()
 
         trial_data = UtteranceList.load('trial_embeddings')
         plda_data = UtteranceList.load('plda_embeddings')
@@ -196,7 +198,7 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
             scores = score_normalization.apply_snorm(scores, normalization_stats, indices)
             eer = compute_eer(scores, labels)[0] * 100
             min_dcf = compute_min_dcf(scores, labels, 0.05, 1, 1)[0]
-            output_text = 'EER = {:.4f}  minDCF = {:.4f}  [epoch {}] [{}]'.format(eer, min_dcf, Settings().recipe.selected_epoch, trial_list.trial_list_display_name)
+            output_text = 'EER = {:.4f}  minDCF = {:.4f}  [epoch {}] [{}]'.format(eer, min_dcf, epoch, trial_list.trial_list_display_name)
             print(output_text)
 
 print('All done!')

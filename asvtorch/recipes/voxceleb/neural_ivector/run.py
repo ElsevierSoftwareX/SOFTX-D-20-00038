@@ -118,7 +118,7 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
 
         for epoch in range(Settings().network.resume_epoch, Settings().network.max_epochs, Settings().network.epochs_per_train_call):
 
-            network = network_training.train_network(training_data, epoch)
+            network, stop_flag, epoch = network_training.train_network(training_data, epoch)
 
             extract_embeddings(trial_data, network)
             extract_embeddings(plda_data, network)
@@ -145,7 +145,7 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
             plda_data.embeddings = None
             torch.cuda.empty_cache()
 
-            if eer_stopper.stop():
+            if eer_stopper.stop() or stop_flag:
                 break
 
         result_file.close()
