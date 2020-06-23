@@ -60,19 +60,10 @@ run_configs = sys.argv[1:]
 if not run_configs:
     sys.exit('Give one or more run configs as argument(s)!')
 
-# These small trial lists are used between epochs to compute EERs:
-small_trial_list_list = [
-    recipeutils.TrialList(trial_list_display_name='vox1_original', dataset_folder='voxceleb1', trial_file='veri_test.txt'),
-    recipeutils.TrialList(trial_list_display_name='vox1_cleaned', dataset_folder='voxceleb1', trial_file='veri_test2.txt')
-]
-
-# These are the all VoxCeleb trial lists used for final testing:
-full_trial_list_list = [
-    *small_trial_list_list,
-    recipeutils.TrialList(trial_list_display_name='vox1_extended_original', dataset_folder='voxceleb1', trial_file='list_test_all.txt'),
-    recipeutils.TrialList(trial_list_display_name='vox1_extended_cleaned', dataset_folder='voxceleb1', trial_file='list_test_all2.txt'),
-    recipeutils.TrialList(trial_list_display_name='vox1_hard_original', dataset_folder='voxceleb1', trial_file='list_test_hard.txt'),
-    recipeutils.TrialList(trial_list_display_name='vox1_hard_cleaned', dataset_folder='voxceleb1', trial_file='list_test_hard2.txt')
+# SITW trial lists:
+trial_list_list = [
+    recipeutils.TrialList(trial_list_display_name='SITW core-core', dataset_folder='sitw', trial_file='sitw_trials_core_core.txt'),
+    recipeutils.TrialList(trial_list_display_name='SITW core-multi', dataset_folder='sitw', trial_file='sitw_trials_core_multi.txt')
 ]
 
 # Run config loop:
@@ -96,17 +87,16 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
     if Settings().recipe.start_stage <= 5 <= Settings().recipe.end_stage:
 
         print('Selecting network training data...')
-        training_data = UtteranceSelector().choose_all('voxceleb2_cat_combined') # combined = augmented version
-        #training_data = UtteranceSelector().choose_all('voxceleb2_cat') # non-augmented
+        training_data = UtteranceSelector().choose_all('voxceleb1_cat_combined')
+        training_data.combine(UtteranceSelector().choose_all('voxceleb2_cat_combined'))
         training_data.remove_short_utterances(500)  # Remove utts with less than 500 frames
         training_data.remove_speakers_with_few_utterances(10)  # Remove spks with less than 10 utts
 
         print('Selecting PLDA training data...')
-        plda_data = UtteranceSelector().choose_all('voxceleb2_cat_combined')
-        #plda_data = UtteranceSelector().choose_random('voxceleb2_cat', 40000) # non-augmented
+        plda_data = UtteranceSelector().choose_all('voxceleb1_cat_combined')
         plda_data.select_random_speakers(500)
 
-        trial_data = recipeutils.get_trial_utterance_list(small_trial_list_list)
+        trial_data = recipeutils.get_trial_utterance_list(trial_list_list)
 
         result_file = open(fileutils.get_new_results_file(), 'w')
         result_file.write(settings_string + '\n\n')
@@ -127,7 +117,7 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
 
             plda = Plda.train_closed_form(plda_data.embeddings, plda_data.get_spk_labels(), Settings().computing.device)
 
-            for trial_list in small_trial_list_list:
+            for trial_list in trial_list_list:
                 trial_file = trial_list.get_path_to_trial_file()
                 labels, indices = prepare_scoring(trial_data, trial_file)
                 scores = score_trials_plda(trial_data, indices, plda)
@@ -154,10 +144,10 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
         network = network_io.load_network(epoch, Settings().computing.device)
 
         print('Loading trial data...')
-        trial_data = recipeutils.get_trial_utterance_list(full_trial_list_list)
+        trial_data = recipeutils.get_trial_utterance_list(trial_list_list)
         print('Loading PLDA data...')
-        plda_data = UtteranceSelector().choose_all('voxceleb2_cat_combined') # use the whole data in testing mode
-        #plda_data = UtteranceSelector().choose_all('voxceleb2_cat') # non-augmented
+        plda_data = UtteranceSelector().choose_all('voxceleb1_cat_combined')
+        plda_data.combine(UtteranceSelector().choose_all('voxceleb2_cat_combined')) # use the whole data in testing mode # use the whole data in testing mode
 
         print('Extracting trial embeddings...')
         extract_embeddings(trial_data, network)
@@ -191,7 +181,7 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
         normalization_stats = score_normalization.compute_adaptive_snorm_stats(trial_data.embeddings, normalization_embeddings, plda, Settings().backend.plda_dim, Settings().backend.score_norm_adaptive_cohort_size)
 
         # Scoring and score normalization
-        for trial_list in full_trial_list_list:
+        for trial_list in trial_list_list:
             trial_file = trial_list.get_path_to_trial_file()
             labels, indices = prepare_scoring(trial_data, trial_file)
             scores = score_trials_plda(trial_data, indices, plda)  
