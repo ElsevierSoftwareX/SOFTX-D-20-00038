@@ -53,7 +53,7 @@ Update the settings in the initial config file [configs/init_config.py](configs/
     5) `python asvtorch/recipes/voxceleb/xvector/run.py emb_net`
         - This will extract embeddings for PLDA training and for trial list utterances.
     6) `python asvtorch/recipes/voxceleb/xvector/run.py score_net`
-        - This will process the embeddings, train PLDA, score the trial lists, apply score normalization, and compute EER and minDCF metrics.
+        - This will process the embeddings, train PLDA, score the trial lists, and compute EER and minDCF metrics.
 
 - To execute the whole recipe at one go: \
     `python asvtorch/recipes/voxceleb/xvector/run.py prepare fe aug net emb_net score_net`
@@ -63,36 +63,46 @@ Update the settings in the initial config file [configs/init_config.py](configs/
 ### Results in with full PLDA training data and score normalization (scoring stage)
 
 ``` txt
-EER = 2.8739  minDCF = 0.1932  [epoch 7] [vox1_original]
-EER = 2.7120  minDCF = 0.1907  [epoch 7] [vox1_cleaned]
-EER = 2.8840  minDCF = 0.1869  [epoch 7] [vox1_extended_original]
-EER = 2.7728  minDCF = 0.1846  [epoch 7] [vox1_extended_cleaned]
-EER = 5.0285  minDCF = 0.2930  [epoch 7] [vox1_hard_original]
-EER = 4.9167  minDCF = 0.2912  [epoch 7] [vox1_hard_cleaned]
+EER = 2.7042  minDCF = 0.1845  [epoch 59] [vox1_original]
+EER = 2.5844  minDCF = 0.1820  [epoch 59] [vox1_cleaned]
+EER = 2.7960  minDCF = 0.1764  [epoch 59] [vox1_extended_original]
+EER = 2.6879  minDCF = 0.1742  [epoch 59] [vox1_extended_cleaned]
+EER = 4.7078  minDCF = 0.2809  [epoch 59] [vox1_hard_original]
+EER = 4.5947  minDCF = 0.2789  [epoch 59] [vox1_hard_cleaned]
 ```
 
 ### Results during network training with limited PLDA data
 
 ``` txt
-EER = 5.7690  minDCF = 0.3392  [epoch 1] [vox1_original]
-EER = 5.6262  minDCF = 0.3373  [epoch 1] [vox1_cleaned]
-EER = 4.8994  minDCF = 0.3115  [epoch 2] [vox1_original]
-EER = 4.7434  minDCF = 0.3083  [epoch 2] [vox1_cleaned]
-EER = 4.6714  minDCF = 0.2991  [epoch 3] [vox1_original]
-EER = 4.5573  minDCF = 0.2970  [epoch 3] [vox1_cleaned]
-EER = 4.3479  minDCF = 0.2858  [epoch 4] [vox1_original]
-EER = 4.2436  minDCF = 0.2827  [epoch 4] [vox1_cleaned]
-EER = 4.3214  minDCF = 0.2795  [epoch 5] [vox1_original]
-EER = 4.1851  minDCF = 0.2763  [epoch 5] [vox1_cleaned]
-EER = 4.1783  minDCF = 0.2687  [epoch 6] [vox1_original]
-EER = 4.0149  minDCF = 0.2665  [epoch 6] [vox1_cleaned]
-EER = 4.1199  minDCF = 0.2568  [epoch 7] [vox1_original]
-EER = 3.9936  minDCF = 0.2545  [epoch 7] [vox1_cleaned]
+EER = 8.7383  minDCF = 0.4522  [epoch 5] [vox1_original]
+EER = 8.6227  minDCF = 0.4505  [epoch 5] [vox1_cleaned]
+EER = 6.6704  minDCF = 0.3873  [epoch 10] [vox1_original]
+EER = 6.5062  minDCF = 0.3844  [epoch 10] [vox1_cleaned]
+EER = 5.3236  minDCF = 0.3064  [epoch 15] [vox1_original]
+EER = 5.1848  minDCF = 0.3032  [epoch 15] [vox1_cleaned]
+EER = 4.3373  minDCF = 0.2811  [epoch 20] [vox1_original]
+EER = 4.1744  minDCF = 0.2788  [epoch 20] [vox1_cleaned]
+EER = 3.7223  minDCF = 0.2386  [epoch 25] [vox1_original]
+EER = 3.5948  minDCF = 0.2360  [epoch 25] [vox1_cleaned]
+EER = 3.2769  minDCF = 0.2070  [epoch 30] [vox1_original]
+EER = 3.1375  minDCF = 0.2045  [epoch 30] [vox1_cleaned]
+EER = 3.2504  minDCF = 0.1961  [epoch 35] [vox1_original]
+EER = 3.1002  minDCF = 0.1935  [epoch 35] [vox1_cleaned]
+EER = 3.2132  minDCF = 0.2003  [epoch 40] [vox1_original]
+EER = 3.0949  minDCF = 0.1969  [epoch 40] [vox1_cleaned]
+EER = 3.1920  minDCF = 0.1935  [epoch 45] [vox1_original]
+EER = 3.0524  minDCF = 0.1902  [epoch 45] [vox1_cleaned]
+EER = 3.0754  minDCF = 0.1945  [epoch 50] [vox1_original]
+EER = 2.9567  minDCF = 0.1913  [epoch 50] [vox1_cleaned]
+EER = 3.1390  minDCF = 0.1931  [epoch 55] [vox1_original]
+EER = 3.0098  minDCF = 0.1899  [epoch 55] [vox1_cleaned]
+EER = 3.1178  minDCF = 0.1930  [epoch 59] [vox1_original]
+EER = 2.9726  minDCF = 0.1898  [epoch 59] [vox1_cleaned]
 ```
 
 ### Expected running time
 
-About 24 hours from the beginning to the end with the following hardware:
+About 40 hours from the beginning to the end with the following hardware:
 
 - 500 GB of RAM
 - GeForce RTX 2048 Ti (11 GB)
