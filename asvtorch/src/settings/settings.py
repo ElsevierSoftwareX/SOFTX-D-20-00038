@@ -155,7 +155,7 @@ class FeatureSettings(AbstractSettings):
 class BackendSettings(AbstractSettings):
     plda_dim: int = 200
     max_all_vs_all_score_count: int = int(100e6)  # if more scores, use pairwise scoring
-    pairwise_scoring_chunk_size: int = int(0.1e6)
+    pairwise_scoring_chunk_size: int = int(0.05e6)
     score_norm_full_cohort_size: int = 2000
     score_norm_adaptive_cohort_size: int = 200
     plda_rcond = 1e-5
