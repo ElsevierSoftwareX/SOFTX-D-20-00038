@@ -53,6 +53,7 @@ network.target_loss = 0.8
 network.epochs_per_train_call = 5
 network.max_batch_size_in_frames = 15000
 network.max_consecutive_lr_updates = 2
+network.lrelu_slope = 0.2
 
 # To resume training from a specific epoch:
 net_resume < net
