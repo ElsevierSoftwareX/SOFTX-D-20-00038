@@ -50,6 +50,16 @@ class LinearReluBatchNormLayer(nn.Module):
     def forward(self, x):
         return self.batchnorm(self.activation(self.linear(x)))
 
+class LinearTanhBatchNormLayer(nn.Module):
+    def __init__(self, D_in, D_out):
+        super().__init__()
+        self.activation = torch.tanh
+        self.linear = torch.nn.Linear(D_in, D_out)
+        self.batchnorm = nn.BatchNorm1d(D_out, momentum=Settings().network.bn_momentum, affine=Settings().network.bn_affine)
+
+    def forward(self, x):
+        return self.batchnorm(self.activation(self.linear(x)))
+
 
 class LinearBatchNormLayer(nn.Module):
     def __init__(self, D_in, D_out):

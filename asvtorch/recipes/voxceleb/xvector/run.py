@@ -18,7 +18,7 @@ from asvtorch.src.settings.settings import Settings
 import asvtorch.recipes.voxceleb.data_preparation as data_preparation
 
 import asvtorch.src.misc.fileutils as fileutils
-from asvtorch.src.misc.miscutils import dual_print
+from asvtorch.src.misc.miscutils import dual_print, print_embedding_stats
 
 from asvtorch.src.frontend.feature_extractor import FeatureExtractor
 from asvtorch.src.utterances.utterance_selector import UtteranceSelector
@@ -121,6 +121,8 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
             extract_embeddings(plda_data, network)
             network = None
 
+            print_embedding_stats(plda_data.embeddings)
+
             vector_processor = VectorProcessor.train(plda_data.embeddings, 'cwl', Settings().computing.device)
             trial_data.embeddings = vector_processor.process(trial_data.embeddings)
             plda_data.embeddings = vector_processor.process(plda_data.embeddings)
@@ -176,6 +178,8 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
 
         trial_data = UtteranceList.load('trial_embeddings')
         plda_data = UtteranceList.load('plda_embeddings')
+
+        print_embedding_stats(plda_data.embeddings)
 
         vector_processor = VectorProcessor.train(plda_data.embeddings, 'cwl', Settings().computing.device)
         trial_data.embeddings = vector_processor.process(trial_data.embeddings)

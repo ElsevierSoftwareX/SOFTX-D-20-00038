@@ -2,6 +2,7 @@ import os
 import time
 import random
 import sys
+import builtins
 
 import numpy as np
 import torch
@@ -42,6 +43,8 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0):
     net = network_io.initialize_net(feat_dim, n_speakers)
     net.to(Settings().computing.device)
 
+    print_learnable_parameters(net)
+
     total_params = sum(p.numel() for p in net.parameters() if p.requires_grad)
     print('Number of trainable parameters: {}'.format(total_params))
 
@@ -53,8 +56,11 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0):
     network_folder = fileutils.get_network_folder()
     output_filename = os.path.join(network_folder, 'epoch')
 
-    if resume_epoch <= 0:
-        resume_epoch = 0
+    if resume_epoch < 0:
+        resume_epoch = -resume_epoch
+        print('Computing ASV metrics for epoch {}...'.format(resume_epoch))
+        network_io.load_state(output_filename, resume_epoch, net, optimizer, Settings().computing.device)
+        return net, True, resume_epoch
     elif resume_epoch > 0:
         print('Resuming network training from epoch {}...'.format(resume_epoch))
         network_io.load_state(output_filename, resume_epoch, net, optimizer, Settings().computing.device)
@@ -95,7 +101,7 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0):
             speaker_labels = speaker_labels.to(Settings().computing.device)
 
             outputs = net(features)
-            loss = criterion(outputs, speaker_labels) / settings.optimizer_step_interval
+            loss = (criterion(outputs, speaker_labels)) / settings.optimizer_step_interval
             loss.backward()
 
             # Updating weights:
@@ -195,10 +201,31 @@ def _select_random_subset(data, n):
 #     optimizer.param_groups[2]['lr'] = learning_rate * settings.general_learning_rate_factor
 
 def _init_optimizer(net, settings):
+    params = get_weight_decay_param_groups(net, ['batchnorm'])
     if settings.optimizer == 'sgd':
-        return optim.SGD(net.parameters(), lr=settings.initial_learning_rate, weight_decay=settings.weight_decay, momentum=settings.momentum)
+        return optim.SGD(params, lr=settings.initial_learning_rate, weight_decay=settings.weight_decay, momentum=settings.momentum)
     sys.exit('Unsupported optimizer: {}'.format(settings.optimizer))
 
+def get_weight_decay_param_groups(model, skip_list=[]):
+    decay = []
+    no_decay = []
+    for name, param in model.named_parameters():
+        if not param.requires_grad:
+            continue
+        if builtins.any(x in name for x in skip_list):
+            no_decay.append(param)
+            print('No weight decay applied to {}'.format(name))
+        else:
+            decay.append(param)
+    return [
+        {'params': no_decay, 'weight_decay': 0.},
+        {'params': decay, 'weight_decay': Settings().network.weight_decay}]
+
+def print_learnable_parameters(model: torch.nn.Module):
+    print('Learnable parameters of the model:')
+    for name, param in model.named_parameters():
+        if param.requires_grad:
+            print(name, param.numel())
 
 
 # def _init_optimizer(net, settings):

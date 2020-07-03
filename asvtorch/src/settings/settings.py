@@ -158,7 +158,7 @@ class BackendSettings(AbstractSettings):
     pairwise_scoring_chunk_size: int = int(0.05e6)
     score_norm_full_cohort_size: int = 2000
     score_norm_adaptive_cohort_size: int = 200
-    plda_rcond = 1e-5
+    plda_rcond = 1e-8
 
 @dataclass
 class DiarizationSettings(AbstractSettings):

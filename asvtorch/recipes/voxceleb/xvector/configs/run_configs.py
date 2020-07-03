@@ -53,7 +53,34 @@ network.target_loss = 0.8
 network.epochs_per_train_call = 5
 network.max_batch_size_in_frames = 15000
 network.max_consecutive_lr_updates = 2
-network.lrelu_slope = 0.2
+
+net2 < net
+network.network_class = 'asvtorch.src.networks.architectures.StandardTanhNet'
+paths.system_folder = 'full_system_default2'
+
+net2_test < net2
+network.resume_epoch = -37
+
+net3 < net
+paths.system_folder = 'full_system_default3'
+network.resume_epoch = 5
+
+net4 < net
+paths.system_folder = 'full_system_default4'
+network.resume_epoch = 0
+
+net4_test < net4
+network.resume_epoch = -37
+
+net5 < net
+paths.system_folder = 'full_system_default5'
+network.resume_epoch = 0
+
+net6 < net
+paths.system_folder = 'full_system_default6'
+network.resume_epoch = 0
+network.activation = 'relu'
+
 
 # To resume training from a specific epoch:
 net_resume < net
@@ -107,6 +134,9 @@ network.max_batch_size_in_frames = 30000
 
 emb_net < emb < net
 
+emb_net4 < emb < net4
+recipe.selected_epoch = 70
+
 emb_net_se < emb < net_se
 
 emb_net_resse < emb < net_resse
@@ -125,11 +155,13 @@ score
 recipe.start_stage = 9
 recipe.end_stage = 9
 backend.plda_dim = 200
-backend.plda_rcond = 1e-5
+backend.plda_rcond = 1e-10
 backend.score_norm_full_cohort_size = 2000
 backend.score_norm_adaptive_cohort_size = 200
 
 score_net < score < emb_net
+
+score_net4 < score < emb_net4
 
 score_net_se < score < emb_net_se
 
