@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Optional
 
 import torch
+import numpy as np
 
 from asvtorch.src.settings.abstract_settings import AbstractSettings
 from asvtorch.src.settings.settings import Settings
@@ -159,8 +160,9 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
         for trial_list in full_trial_list_list:
             trial_file = trial_list.get_path_to_trial_file()
             labels, indices = prepare_scoring(trial_data, trial_file)
-            scores = score_trials_plda(trial_data, indices, plda)  
+            scores = score_trials_plda(trial_data, indices, plda)
             #scores = score_normalization.apply_snorm(scores, normalization_stats, indices)
+            np.savetxt(fileutils.get_score_output_file(trial_data), scores)
             eer = compute_eer(scores, labels)[0] * 100
             min_dcf = compute_min_dcf(scores, labels, 0.05, 1, 1)[0]
             output_text = 'EER = {:.4f}  minDCF = {:.4f}  [iteration {}] [{}]'.format(eer, min_dcf, Settings().recipe.selected_iteration, trial_list.trial_list_display_name)

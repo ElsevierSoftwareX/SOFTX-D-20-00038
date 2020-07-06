@@ -3,6 +3,7 @@ from os.path import isfile, join
 import datetime
 from typing import List
 
+from asvtorch.src.misc.recipeutils import TrialList
 from asvtorch.src.settings.settings import Settings
 
 def ensure_exists(folder: str):
@@ -25,7 +26,7 @@ def remove_ext(filename: str, ext: str) -> str:
     if not ext.startswith('.'):
         ext = '.' + ext
     if filename.endswith(ext):
-        filename = filename[:-4]
+        filename = filename[:-len(ext)]
     return filename
 
 def list_files(folder: str) -> List[str]:
@@ -91,6 +92,9 @@ def get_score_folder() -> str:
     folder = os.path.join(Settings().paths.output_folder, Settings().paths.system_folder, 'scores')
     ensure_exists(folder)
     return folder
+
+def get_score_output_file(trial_data: TrialList) -> str:
+    return os.path.join(get_score_folder(), 'scores_{}'.format(trial_data.trial_file))
 
 def get_results_folder() -> str:
     folder = os.path.join(Settings().paths.output_folder, Settings().paths.system_folder, 'results')
