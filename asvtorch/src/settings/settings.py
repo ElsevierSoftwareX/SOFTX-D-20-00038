@@ -71,6 +71,7 @@ class NetworkSettings(AbstractSettings):
     momentum: float = 0  # (0 to disable)
 
     weight_decay: float = 0.001    # Weight decay for utterance-level layers
+    weight_decay_skiplist: Tuple[str] = ('batchnorm',)
 
     optimizer_step_interval: int = 1  # This can be used to combine gradients of many minibatches before updating weights
 

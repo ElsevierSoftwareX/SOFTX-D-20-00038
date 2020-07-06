@@ -201,12 +201,12 @@ def _select_random_subset(data, n):
 #     optimizer.param_groups[2]['lr'] = learning_rate * settings.general_learning_rate_factor
 
 def _init_optimizer(net, settings):
-    params = get_weight_decay_param_groups(net, ['batchnorm'])
+    params = get_weight_decay_param_groups(net, settings.weight_decay_skiplist)
     if settings.optimizer == 'sgd':
         return optim.SGD(params, lr=settings.initial_learning_rate, weight_decay=settings.weight_decay, momentum=settings.momentum)
     sys.exit('Unsupported optimizer: {}'.format(settings.optimizer))
 
-def get_weight_decay_param_groups(model, skip_list=[]):
+def get_weight_decay_param_groups(model, skip_list):
     decay = []
     no_decay = []
     for name, param in model.named_parameters():

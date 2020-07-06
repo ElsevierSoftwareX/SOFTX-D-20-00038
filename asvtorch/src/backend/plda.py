@@ -69,8 +69,10 @@ class Plda:
     def _compute_scoring_matrices(self, plda_dim):
         if self.plda_dim != plda_dim:
             self.plda_dim = plda_dim
-            iSt = torch.pinverse(self.St, Settings().backend.plda_rcond)
-            iS = torch.pinverse(self.St - torch.chain_matmul(self.Sb, iSt, self.Sb), Settings().backend.plda_rcond)
+            #iSt = torch.pinverse(self.St, Settings().backend.plda_rcond)
+            #iS = torch.pinverse(self.St - torch.chain_matmul(self.Sb, iSt, self.Sb), Settings().backend.plda_rcond)
+            iSt = torch.inverse(self.St)
+            iS = torch.inverse(self.St - torch.chain_matmul(self.Sb, iSt, self.Sb))
             Q = iSt - iS
             P = torch.chain_matmul(iSt, self.Sb, iS)
             U, s = torch.svd(P)[:2]

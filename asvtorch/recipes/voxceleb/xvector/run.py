@@ -198,7 +198,8 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
         for trial_list in full_trial_list_list:
             trial_file = trial_list.get_path_to_trial_file()
             labels, indices = prepare_scoring(trial_data, trial_file)
-            scores = score_trials_plda(trial_data, indices, plda)  
+            scores = score_trials_plda(trial_data, indices, plda) 
+            #numpy.savetxt(fname, X, 
             #scores = score_normalization.apply_snorm(scores, normalization_stats, indices)
             eer = compute_eer(scores, labels)[0] * 100
             min_dcf = compute_min_dcf(scores, labels, 0.05, 1, 1)[0]
