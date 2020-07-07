@@ -105,7 +105,12 @@ net11 < net
 paths.system_folder = 'full_system_default11'
 network.resume_epoch = 0
 network.weight_decay = 0.0005
-network.network_class = 'asvtorch.src.networks.architectures.StandardNet2' 
+network.network_class = 'asvtorch.src.networks.architectures.StandardNet2'
+
+net12 < net
+paths.system_folder = 'full_system_default12'
+network.resume_epoch = 0
+network.bn_affine = False
 
 
 # To resume training from a specific epoch:
@@ -174,6 +179,8 @@ emb_net10 < emb < net10
 
 emb_net11 < emb < net11
 
+emb_net12 < emb < net12
+
 emb_net_se < emb < net_se
 
 emb_net_resse < emb < net_resse
@@ -209,6 +216,8 @@ score_net9 < score < emb_net9
 score_net10 < score < emb_net10
 
 score_net11 < score < emb_net11
+
+score_net12 < score < emb_net12
 
 
 

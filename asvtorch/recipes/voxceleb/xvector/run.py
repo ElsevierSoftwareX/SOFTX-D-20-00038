@@ -201,7 +201,7 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
             labels, indices = prepare_scoring(trial_data, trial_file)
             scores = score_trials_plda(trial_data, indices, plda) 
             #scores = score_normalization.apply_snorm(scores, normalization_stats, indices)
-            np.savetxt(fileutils.get_score_output_file(trial_data), scores) 
+            np.savetxt(fileutils.get_score_output_file(trial_list), scores)
             eer = compute_eer(scores, labels)[0] * 100
             min_dcf = compute_min_dcf(scores, labels, 0.05, 1, 1)[0]
             output_text = 'EER = {:.4f}  minDCF = {:.4f}  [epoch {}] [{}]'.format(eer, min_dcf, epoch, trial_list.trial_list_display_name)
