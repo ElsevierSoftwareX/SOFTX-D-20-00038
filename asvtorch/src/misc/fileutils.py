@@ -93,8 +93,8 @@ def get_score_folder() -> str:
     ensure_exists(folder)
     return folder
 
-def get_score_output_file(trial_data: TrialList) -> str:
-    return os.path.join(get_score_folder(), 'scores_{}'.format(trial_data.trial_file))
+def get_score_output_file(trial_list: TrialList) -> str:
+    return os.path.join(get_score_folder(), 'scores_{}'.format(trial_list.trial_file))
 
 def get_results_folder() -> str:
     folder = os.path.join(Settings().paths.output_folder, Settings().paths.system_folder, 'results')
