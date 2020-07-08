@@ -63,54 +63,6 @@ class StandardNet(StandardNetTemplate):
         self.utterance_layers.append(LinearReluBatchNormLayer(self.dim_uttlayer, self.dim_uttlayer))
         self.utterance_layers.append(nn.Linear(self.dim_uttlayer, self.n_speakers))
 
-class StandardNet2(StandardNetTemplate):
-    def __init__(self, feat_dim, n_speakers):
-        super().__init__(feat_dim, n_speakers)
-
-        self.tdnn_layers.append(CnnLayer(self.feat_dim, self.dim_featlayer, 2))
-        self.tdnn_layers.append(CnnLayer(self.dim_featlayer, self.dim_featlayer, 2))
-        self.tdnn_layers.append(CnnLayer(self.dim_featlayer, self.dim_featlayer, 3))
-        self.tdnn_layers.append(CnnLayer(self.dim_featlayer, self.dim_featlayer, 0))
-        self.tdnn_layers.append(CnnLayer(self.dim_featlayer, self.dim_statlayer, 0))
-
-        # Pooling layer
-
-        self.utterance_layers.append(LinearReluBatchNormLayer(self.pooling_output_dim, self.dim_uttlayer))
-        #self.utterance_layers.append(LinearReluBatchNormLayer(self.dim_uttlayer, self.dim_uttlayer))
-        self.utterance_layers.append(nn.Linear(self.dim_uttlayer, self.n_speakers))
-
-class StandardNet3(StandardNetTemplate):
-    def __init__(self, feat_dim, n_speakers):
-        super().__init__(feat_dim, n_speakers)
-
-        self.tdnn_layers.append(CnnLayer(self.feat_dim, self.dim_featlayer, 2))
-        self.tdnn_layers.append(CnnLayer(self.dim_featlayer, self.dim_featlayer, 2))
-        self.tdnn_layers.append(CnnLayer(self.dim_featlayer, self.dim_featlayer, 3))
-        self.tdnn_layers.append(CnnLayer(self.dim_featlayer, self.dim_featlayer, 0))
-        self.tdnn_layers.append(CnnLayer(self.dim_featlayer, self.dim_statlayer, 0))
-
-        # Pooling layer
-
-        self.utterance_layers.append(LinearBatchNormLayer(self.pooling_output_dim, self.dim_uttlayer))
-        #self.utterance_layers.append(LinearReluBatchNormLayer(self.dim_uttlayer, self.dim_uttlayer))
-        self.utterance_layers.append(nn.Linear(self.dim_uttlayer, self.n_speakers))
-
-
-class StandardTanhNet(StandardNetTemplate):
-    def __init__(self, feat_dim, n_speakers):
-        super().__init__(feat_dim, n_speakers)
-
-        self.tdnn_layers.append(CnnLayer(self.feat_dim, self.dim_featlayer, 2))
-        self.tdnn_layers.append(CnnLayer(self.dim_featlayer, self.dim_featlayer, 2))
-        self.tdnn_layers.append(CnnLayer(self.dim_featlayer, self.dim_featlayer, 3))
-        self.tdnn_layers.append(CnnLayer(self.dim_featlayer, self.dim_featlayer, 0))
-        self.tdnn_layers.append(CnnLayer(self.dim_featlayer, self.dim_statlayer, 0))
-
-        # Pooling layer
-
-        self.utterance_layers.append(LinearTanhBatchNormLayer(self.pooling_output_dim, self.dim_uttlayer))
-        self.utterance_layers.append(LinearReluBatchNormLayer(self.dim_uttlayer, self.dim_uttlayer))
-        self.utterance_layers.append(nn.Linear(self.dim_uttlayer, self.n_speakers))
 
 class StandardSeNet(StandardNetTemplate):
     def __init__(self, feat_dim, n_speakers):
@@ -126,8 +78,7 @@ class StandardSeNet(StandardNetTemplate):
 
         # Pooling layer
 
-        if Settings().network.pooling_layer_type != 'clustering' or Settings().network.supervector_mode != 'tmfa':
-            self.utterance_layers.append(LinearReluBatchNormLayer(self.pooling_output_dim, self.dim_uttlayer))
+        self.utterance_layers.append(LinearReluBatchNormLayer(self.pooling_output_dim, self.dim_uttlayer))
         self.utterance_layers.append(LinearReluBatchNormLayer(self.dim_uttlayer, self.dim_uttlayer))
         self.utterance_layers.append(nn.Linear(self.dim_uttlayer, self.n_speakers))
 
@@ -175,48 +126,6 @@ class LargeResSeNet(StandardNetTemplate):
         self.utterance_layers.append(LinearReluBatchNormLayer(self.dim_uttlayer, self.dim_uttlayer))
         self.utterance_layers.append(nn.Linear(self.dim_uttlayer, self.n_speakers))
 
-
-
-
-
-# class StandardNetOkabeAttention(StandardNetTemplate):
-#     def __init__(self, feat_dim, n_speakers):
-#         super().__init__(feat_dim, n_speakers)
-
-#         self.attention_module = OkabeAttention(self.feat_dim)
-
-#         self.tdnn_layers.append(TDNNLayer(self.feat_dim, self.dim_featlayer, (-2, -1, 0, 1, 2)))
-#         self.tdnn_layers.append(TDNNLayer(self.dim_featlayer, self.dim_featlayer, (-2, 0, 2)))
-#         self.tdnn_layers.append(TDNNLayer(self.dim_featlayer, self.dim_featlayer, (-3, 0, 3)))
-#         self.tdnn_layers.append(LinearReluBatchNormLayer2DBatch(self.dim_featlayer, self.dim_featlayer))
-#         self.tdnn_layers.append(LinearReluBatchNormLayer2DBatch(self.dim_featlayer, self.dim_statlayer))
-
-#         self.pooling_layer = AttentivePoolingLayer()
-#         pooling_output_dim = Settings().network.stat_size * 2
-
-#         self.utterance_layers.append(LinearReluBatchNormLayer(pooling_output_dim, self.dim_uttlayer))
-#         self.utterance_layers.append(LinearReluBatchNormLayer(self.dim_uttlayer, self.dim_uttlayer))
-#         self.utterance_layers.append(nn.Linear(self.dim_uttlayer, self.n_speakers))
-
-#         self.context = _get_tdnn_context(self.tdnn_layers)
-#         print('StandardNet initialized; TDNN context: ({}, {})'.format(self.context[0], self.context[1]))
-
-#     def forward(self, x, extract=False):
-
-#         attention_weights = self.attention_module(x[:, self.context[0]:-self.context[1], :])
-
-#         for layer in self.tdnn_layers:
-#             x = layer(x)
-
-#         x = self.pooling_layer(x, attention_weights)
-
-#         if extract: # Embedding extraction
-#             return self.utterance_layers[0].linear(x)
-
-#         for layer in self.utterance_layers:
-#             x = layer(x)
-
-#         return x
 
 
 def _init_pooling_layer():

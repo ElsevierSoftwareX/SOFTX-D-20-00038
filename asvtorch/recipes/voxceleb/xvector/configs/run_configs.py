@@ -54,65 +54,6 @@ network.epochs_per_train_call = 5
 network.max_batch_size_in_frames = 15000
 network.max_consecutive_lr_updates = 2
 
-net2 < net
-network.network_class = 'asvtorch.src.networks.architectures.StandardTanhNet'
-paths.system_folder = 'full_system_default2'
-
-net2_test < net2
-network.resume_epoch = -37
-
-net3 < net
-paths.system_folder = 'full_system_default3'
-network.resume_epoch = 5
-
-net4 < net
-paths.system_folder = 'full_system_default4'
-network.resume_epoch = 0
-
-net4_test < net4
-network.resume_epoch = -37
-
-net5 < net
-paths.system_folder = 'full_system_default5'
-network.resume_epoch = 0
-
-net6 < net
-paths.system_folder = 'full_system_default6'
-network.resume_epoch = 0
-network.activation = 'relu'
-
-net7 < net
-paths.system_folder = 'full_system_default7'
-network.resume_epoch = 0
-network.weight_decay = 0.003
-
-net8 < net
-paths.system_folder = 'full_system_default8'
-network.resume_epoch = 0
-network.lrelu_slope = 0.1
-
-net9 < net
-paths.system_folder = 'full_system_default9'
-network.resume_epoch = 0
-network.network_class = 'asvtorch.src.networks.architectures.StandardNet2'
-
-net10 < net
-paths.system_folder = 'full_system_default10'
-network.resume_epoch = 0
-network.network_class = 'asvtorch.src.networks.architectures.StandardNet3'
-
-net11 < net
-paths.system_folder = 'full_system_default11'
-network.resume_epoch = 0
-network.weight_decay = 0.0005
-network.network_class = 'asvtorch.src.networks.architectures.StandardNet2'
-
-net12 < net
-paths.system_folder = 'full_system_default12'
-network.resume_epoch = 0
-network.bn_affine = False
-
-
 # To resume training from a specific epoch:
 net_resume < net
 network.resume_epoch = 23
@@ -165,22 +106,6 @@ network.max_batch_size_in_frames = 30000
 
 emb_net < emb < net
 
-emb_net4 < emb < net4
-recipe.selected_epoch = 70
-
-emb_net5 < emb < net5
-recipe.selected_epoch = 55
-
-emb_net8 < emb < net8
-
-emb_net9 < emb < net9
-
-emb_net10 < emb < net10
-
-emb_net11 < emb < net11
-
-emb_net12 < emb < net12
-
 emb_net_se < emb < net_se
 
 emb_net_resse < emb < net_resse
@@ -203,22 +128,6 @@ backend.score_norm_full_cohort_size = 2000
 backend.score_norm_adaptive_cohort_size = 200
 
 score_net < score < emb_net
-
-score_net4 < score < emb_net4
-
-score_net5 < score < emb_net5
-
-score_net8 < score < emb_net8
-
-score_net9 < score < emb_net9
-
-score_net10 < score < emb_net10
-
-score_net11 < score < emb_net11
-
-score_net12 < score < emb_net12
-
-
 
 score_net_se < score < emb_net_se
 

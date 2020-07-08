@@ -50,16 +50,6 @@ class LinearReluBatchNormLayer(nn.Module):
     def forward(self, x):
         return self.batchnorm(self.activation(self.linear(x)))
 
-class LinearTanhBatchNormLayer(nn.Module):
-    def __init__(self, D_in, D_out):
-        super().__init__()
-        self.activation = torch.tanh
-        self.linear = torch.nn.Linear(D_in, D_out)
-        self.batchnorm = nn.BatchNorm1d(D_out, momentum=Settings().network.bn_momentum, affine=Settings().network.bn_affine)
-
-    def forward(self, x):
-        return self.batchnorm(self.activation(self.linear(x)))
-
 
 class LinearBatchNormLayer(nn.Module):
     def __init__(self, D_in, D_out):
@@ -69,16 +59,6 @@ class LinearBatchNormLayer(nn.Module):
 
     def forward(self, x):
         return self.batchnorm(self.linear(x))
-
-class LinearBatchNormDropoutLayer(nn.Module):
-    def __init__(self, D_in, D_out):
-        super().__init__()
-        self.linear = torch.nn.Linear(D_in, D_out)
-        self.batchnorm = nn.BatchNorm1d(D_out, momentum=Settings().network.bn_momentum, affine=Settings().network.bn_affine)
-        self.dropout = nn.Dropout(0.5)
-
-    def forward(self, x):
-        return self.dropout(self.batchnorm(self.linear(x)))
 
         
 class ResCnnLayer(nn.Module):
@@ -204,26 +184,3 @@ def get_activation_function():
         return partial(F.leaky_relu, negative_slope=Settings().network.lrelu_slope)
     elif Settings().network.activation == 'selu':
         return F.selu
-
-
-
-
-
-# class OkabeAttention(nn.Module):
-#     def __init__(self, feat_dim):
-#         super().__init__()
-#         self.activation = get_activation_function()
-#         self.fc1 = torch.nn.Linear(feat_dim, Settings().network.attention_layer_size, bias=True)
-#         self.fc2 = torch.nn.Linear(Settings().network.attention_layer_size, 1, bias=True)
-#         self.norm = get_normalizer(Settings().network.attention_layer_size)
-#     def forward(self, x):
-#         return F.softmax(self.fc2(self.norm(self.activation(self.fc1(x)))), dim=1)
-
-# class AttentivePoolingLayer(nn.Module):
-#     def __init__(self):
-#         super().__init__()
-        
-#     def forward(self, x, attention_weights):
-#         m = torch.sum(x * attention_weights, dim=1)
-#         sigma = torch.sqrt(torch.clamp(torch.sum((x ** 2 * attention_weights), dim=1) - m ** 2, min=1e-6))
-#         return torch.cat((m, sigma), 1)
