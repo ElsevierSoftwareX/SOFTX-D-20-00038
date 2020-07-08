@@ -60,12 +60,12 @@ Update the settings in the initial config file [configs/init_config.py](configs/
 ## Expected results
 
 ``` txt
-EER = 5.3925  minDCF = 0.3479  [iteration 20] [vox1_original]
-EER = 5.2752  minDCF = 0.3459  [iteration 20] [vox1_cleaned]
-EER = 5.5053  minDCF = 0.3415  [iteration 20] [vox1_extended_original]
-EER = 5.4205  minDCF = 0.3396  [iteration 20] [vox1_extended_cleaned]
-EER = 9.1075  minDCF = 0.4762  [iteration 20] [vox1_hard_original]
-EER = 9.0114  minDCF = 0.4747  [iteration 20] [vox1_hard_cleaned]
+EER = 5.2653  minDCF = 0.3413  [iteration 20] [vox1_original]
+EER = 5.1316  minDCF = 0.3392  [iteration 20] [vox1_cleaned]
+EER = 5.5462  minDCF = 0.3430  [iteration 20] [vox1_extended_original]
+EER = 5.4564  minDCF = 0.3411  [iteration 20] [vox1_extended_cleaned]
+EER = 9.1556  minDCF = 0.4763  [iteration 20] [vox1_hard_original]
+EER = 9.0553  minDCF = 0.4746  [iteration 20] [vox1_hard_cleaned]
 ```
 
 ### Expected running time
