@@ -62,11 +62,6 @@ class NetworkSettings(AbstractSettings):
     min_loss_change_ratio: float = 0.01
     min_room_for_improvement: float = 0.1
     target_loss: float = 0.1
-    #learning_rate_schedule: Tuple[float, ...] = (0.05, 0.01, 0.01, 0.01, 0.005, 0.002, 0.001, 0.0005, 0.0003, 0.0002, 0.0001, 0.00005)
-    #general_learning_rate_factor: float = 1  # Multiply the above values with this one
-    #learning_rate_factor_for_frame_layers: float = 1  # How many times larger learning rate is given for frame level layers
-    #learning_rate_factor_for_pooling_layer: float = 1
-    #learning_rate_update_interval: int = 100  # How often learing rates are updated (in minibatches)
 
     momentum: float = 0  # (0 to disable)
 
