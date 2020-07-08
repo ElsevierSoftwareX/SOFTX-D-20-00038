@@ -68,6 +68,5 @@ score_ivec < ext_ivec
 recipe.start_stage = 9
 recipe.end_stage = 9
 backend.plda_dim = 300
-backend.plda_rcond = 1e-7
 #backend.score_norm_full_cohort_size = 2000
 #backend.score_norm_adaptive_cohort_size = 200
