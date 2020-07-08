@@ -49,7 +49,7 @@ network.eer_stop_epochs = 5
 network.max_epochs = 1000
 network.initial_learning_rate = 0.2
 network.min_loss_change_ratio = 0.01
-network.target_loss = 0.8
+network.target_loss = 0.1
 network.epochs_per_train_call = 5
 network.max_batch_size_in_frames = 15000
 network.max_consecutive_lr_updates = 2
@@ -199,7 +199,6 @@ score
 recipe.start_stage = 9
 recipe.end_stage = 9
 backend.plda_dim = 200
-backend.plda_rcond = 1e-15
 backend.score_norm_full_cohort_size = 2000
 backend.score_norm_adaptive_cohort_size = 200
 
