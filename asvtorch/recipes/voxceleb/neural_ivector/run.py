@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Optional
 
 import torch
+import numpy as np
 
 from asvtorch.src.settings.abstract_settings import AbstractSettings
 from asvtorch.src.settings.settings import Settings
@@ -137,7 +138,7 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
                 eer = compute_eer(scores, labels)[0] * 100
                 eer_stopper.add_stopping_eer(eer)
                 min_dcf = compute_min_dcf(scores, labels, 0.05, 1, 1)[0]
-                output_text = 'EER = {:.4f}  minDCF = {:.4f}  [epoch {}] [{}]'.format(eer, min_dcf, epoch + 1, trial_list.trial_list_display_name)
+                output_text = 'EER = {:.4f}  minDCF = {:.4f}  [epoch {}] [{}]'.format(eer, min_dcf, epoch, trial_list.trial_list_display_name)
                 dual_print(result_file, output_text)
             dual_print(result_file, '')
 
@@ -185,18 +186,19 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
         plda = Plda.train_closed_form(plda_data.embeddings, plda_data.get_spk_labels(), Settings().computing.device)
 
         # Select score normalization cohort randomly from PLDA training data
-        torch.manual_seed(0)
-        normalization_embeddings = plda_data.embeddings[torch.randperm(plda_data.embeddings.size()[0])[:Settings().backend.score_norm_full_cohort_size], :]
+        #torch.manual_seed(0)
+        #normalization_embeddings = plda_data.embeddings[torch.randperm(plda_data.embeddings.size()[0])[:Settings().backend.score_norm_full_cohort_size], :]
 
         # Compute s-norm statistics
-        normalization_stats = score_normalization.compute_adaptive_snorm_stats(trial_data.embeddings, normalization_embeddings, plda, Settings().backend.plda_dim, Settings().backend.score_norm_adaptive_cohort_size)
+        #normalization_stats = score_normalization.compute_adaptive_snorm_stats(trial_data.embeddings, normalization_embeddings, plda, Settings().backend.plda_dim, Settings().backend.score_norm_adaptive_cohort_size)
 
         # Scoring and score normalization
         for trial_list in full_trial_list_list:
             trial_file = trial_list.get_path_to_trial_file()
             labels, indices = prepare_scoring(trial_data, trial_file)
             scores = score_trials_plda(trial_data, indices, plda)  
-            scores = score_normalization.apply_snorm(scores, normalization_stats, indices)
+            #scores = score_normalization.apply_snorm(scores, normalization_stats, indices)
+            np.savetxt(fileutils.get_score_output_file(trial_list, 'dnn_embedding'), scores)
             eer = compute_eer(scores, labels)[0] * 100
             min_dcf = compute_min_dcf(scores, labels, 0.05, 1, 1)[0]
             output_text = 'EER = {:.4f}  minDCF = {:.4f}  [epoch {}] [{}]'.format(eer, min_dcf, Settings().recipe.selected_epoch, trial_list.trial_list_display_name)
@@ -261,18 +263,19 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
         plda = Plda.train_closed_form(plda_data.embeddings, plda_data.get_spk_labels(), Settings().computing.device)
 
         # Select score normalization cohort randomly from PLDA training data
-        torch.manual_seed(0)
-        normalization_embeddings = plda_data.embeddings[torch.randperm(plda_data.embeddings.size()[0])[:Settings().backend.score_norm_full_cohort_size], :]
+        #torch.manual_seed(0)
+        #normalization_embeddings = plda_data.embeddings[torch.randperm(plda_data.embeddings.size()[0])[:Settings().backend.score_norm_full_cohort_size], :]
 
         # Compute s-norm statistics
-        normalization_stats = score_normalization.compute_adaptive_snorm_stats(trial_data.embeddings, normalization_embeddings, plda, Settings().backend.plda_dim, Settings().backend.score_norm_adaptive_cohort_size)
+        #normalization_stats = score_normalization.compute_adaptive_snorm_stats(trial_data.embeddings, normalization_embeddings, plda, Settings().backend.plda_dim, Settings().backend.score_norm_adaptive_cohort_size)
 
         # Scoring and score normalization
         for trial_list in full_trial_list_list:
             trial_file = trial_list.get_path_to_trial_file()
             labels, indices = prepare_scoring(trial_data, trial_file)
             scores = score_trials_plda(trial_data, indices, plda)  
-            scores = score_normalization.apply_snorm(scores, normalization_stats, indices)
+            #scores = score_normalization.apply_snorm(scores, normalization_stats, indices)
+            np.savetxt(fileutils.get_score_output_file(trial_list, 'neural_ivector'), scores)
             eer = compute_eer(scores, labels)[0] * 100
             min_dcf = compute_min_dcf(scores, labels, 0.05, 1, 1)[0]
             output_text = 'EER = {:.4f}  minDCF = {:.4f}  [iteration {}] [{}]'.format(eer, min_dcf, Settings().recipe.selected_iteration, trial_list.trial_list_display_name)
