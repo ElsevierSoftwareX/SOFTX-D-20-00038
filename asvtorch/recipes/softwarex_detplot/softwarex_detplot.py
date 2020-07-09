@@ -20,7 +20,7 @@ titles = {'voxcelebEC': 'VoxCeleb-E (cleaned)', 'sitw': 'SITW core-core'}
 
 #figure = plt.figure(figsize=(3.9, 3.9))
 
-fig, axes = plt.subplots(1, 2, figsize=(6.4, 3.4), sharey=True)
+fig, axes = plt.subplots(1, 2, figsize=(5.8, 3.4), sharey=True)
 
 # add a big axis, hide frame
 
@@ -50,15 +50,18 @@ for list_index, trial_list in enumerate(('voxcelebEC', 'sitw')):
         #print(scores.shape)
 
         det_plot.set_scores_and_labels(scores, labels)
-        det_plot.plot_det_curve(color=colors[system], linestyle=linestyles[system], label=legend_labels[system])
+        if list_index == 0:
+            det_plot.plot_det_curve(color=colors[system], linestyle=linestyles[system], label=legend_labels[system])
+        else:
+            det_plot.plot_det_curve(color=colors[system], linestyle=linestyles[system])
         det_plot.plot_eer(marker='o', fillstyle='none', markeredgewidth=1, color=colors[system], markersize=8)
         det_plot.plot_min_dcf(*mindcf_params, marker='p', fillstyle='none', markeredgewidth=1, color=colors[system], markersize=9)
 
-    plt.plot(100, 100, marker='o', linestyle='None', fillstyle='none', markeredgewidth=1, color='black', markersize=8, label='EER point')
-    plt.plot(100, 100, marker='p', linestyle='None', fillstyle='none', markeredgewidth=1, color='black', markersize=9, label='MinDCF point')
-
-    if list_index == 0:
-        plt.legend(edgecolor='black')
+    if list_index == 1:
+        plt.plot(100, 100, marker='o', linestyle='None', fillstyle='none', markeredgewidth=1, color='black', markersize=8, label='EER point')
+        plt.plot(100, 100, marker='p', linestyle='None', fillstyle='none', markeredgewidth=1, color='black', markersize=9, label='MinDCF point')
+    
+    plt.legend(edgecolor='black')
 
     #plt.xlabel('')
     if list_index == 1:

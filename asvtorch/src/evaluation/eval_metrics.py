@@ -113,8 +113,8 @@ class DetPlot():
         else:
             ticks = np.asarray(ticks)
         limits = np.asarray([axis_min, axis_max])
-        plt.xlabel('False Acceptance Rate (FAR) [%]')
-        plt.ylabel('False Rejection Rate (FRR) [%]')
+        plt.xlabel('False Acceptance Rate [%]')
+        plt.ylabel('False Rejection Rate [%]')
         ticks, tick_labels, limits = _prepare_det_plot(ticks, limits)
         plt.xticks(ticks, tick_labels)
         plt.yticks(ticks, tick_labels)
