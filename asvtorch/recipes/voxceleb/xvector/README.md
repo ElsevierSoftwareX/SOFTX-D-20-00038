@@ -63,46 +63,38 @@ Update the settings in the initial config file [configs/init_config.py](configs/
 ### Results in with full PLDA training data and score normalization (scoring stage)
 
 ``` txt
-EER = 2.7042  minDCF = 0.1845  [epoch 59] [vox1_original]
-EER = 2.5844  minDCF = 0.1820  [epoch 59] [vox1_cleaned]
-EER = 2.7960  minDCF = 0.1764  [epoch 59] [vox1_extended_original]
-EER = 2.6879  minDCF = 0.1742  [epoch 59] [vox1_extended_cleaned]
-EER = 4.7078  minDCF = 0.2809  [epoch 59] [vox1_hard_original]
-EER = 4.5947  minDCF = 0.2789  [epoch 59] [vox1_hard_cleaned]
+EER = 2.9640  minDCF = 0.2010  [epoch 37] [vox1_original]
+EER = 2.8344  minDCF = 0.1985  [epoch 37] [vox1_cleaned]
+EER = 2.8438  minDCF = 0.1813  [epoch 37] [vox1_extended_original]
+EER = 2.7514  minDCF = 0.1792  [epoch 37] [vox1_extended_cleaned]
+EER = 4.7982  minDCF = 0.2852  [epoch 37] [vox1_hard_original]
+EER = 4.6833  minDCF = 0.2834  [epoch 37] [vox1_hard_cleaned]
 ```
 
 ### Results during network training with limited PLDA data
 
 ``` txt
-EER = 8.7383  minDCF = 0.4522  [epoch 5] [vox1_original]
-EER = 8.6227  minDCF = 0.4505  [epoch 5] [vox1_cleaned]
-EER = 6.6704  minDCF = 0.3873  [epoch 10] [vox1_original]
-EER = 6.5062  minDCF = 0.3844  [epoch 10] [vox1_cleaned]
-EER = 5.3236  minDCF = 0.3064  [epoch 15] [vox1_original]
-EER = 5.1848  minDCF = 0.3032  [epoch 15] [vox1_cleaned]
-EER = 4.3373  minDCF = 0.2811  [epoch 20] [vox1_original]
-EER = 4.1744  minDCF = 0.2788  [epoch 20] [vox1_cleaned]
-EER = 3.7223  minDCF = 0.2386  [epoch 25] [vox1_original]
-EER = 3.5948  minDCF = 0.2360  [epoch 25] [vox1_cleaned]
-EER = 3.2769  minDCF = 0.2070  [epoch 30] [vox1_original]
-EER = 3.1375  minDCF = 0.2045  [epoch 30] [vox1_cleaned]
-EER = 3.2504  minDCF = 0.1961  [epoch 35] [vox1_original]
-EER = 3.1002  minDCF = 0.1935  [epoch 35] [vox1_cleaned]
-EER = 3.2132  minDCF = 0.2003  [epoch 40] [vox1_original]
-EER = 3.0949  minDCF = 0.1969  [epoch 40] [vox1_cleaned]
-EER = 3.1920  minDCF = 0.1935  [epoch 45] [vox1_original]
-EER = 3.0524  minDCF = 0.1902  [epoch 45] [vox1_cleaned]
-EER = 3.0754  minDCF = 0.1945  [epoch 50] [vox1_original]
-EER = 2.9567  minDCF = 0.1913  [epoch 50] [vox1_cleaned]
-EER = 3.1390  minDCF = 0.1931  [epoch 55] [vox1_original]
-EER = 3.0098  minDCF = 0.1899  [epoch 55] [vox1_cleaned]
-EER = 3.1178  minDCF = 0.1930  [epoch 59] [vox1_original]
-EER = 2.9726  minDCF = 0.1898  [epoch 59] [vox1_cleaned]
+EER = 7.2271  minDCF = 0.4130  [epoch 5] [vox1_original]
+EER = 7.0806  minDCF = 0.4112  [epoch 5] [vox1_cleaned]
+EER = 5.6735  minDCF = 0.3254  [epoch 10] [vox1_original]
+EER = 5.5517  minDCF = 0.3233  [epoch 10] [vox1_cleaned]
+EER = 4.8570  minDCF = 0.2966  [epoch 15] [vox1_original]
+EER = 4.6849  minDCF = 0.2945  [epoch 15] [vox1_cleaned]
+EER = 4.5919  minDCF = 0.2833  [epoch 20] [vox1_original]
+EER = 4.4563  minDCF = 0.2811  [epoch 20] [vox1_cleaned]
+EER = 4.1783  minDCF = 0.2599  [epoch 25] [vox1_original]
+EER = 4.0468  minDCF = 0.2577  [epoch 25] [vox1_cleaned]
+EER = 4.1571  minDCF = 0.2464  [epoch 30] [vox1_original]
+EER = 4.0521  minDCF = 0.2441  [epoch 30] [vox1_cleaned]
+EER = 4.1093  minDCF = 0.2485  [epoch 35] [vox1_original]
+EER = 3.9989  minDCF = 0.2461  [epoch 35] [vox1_cleaned]
+EER = 4.0934  minDCF = 0.2480  [epoch 37] [vox1_original]
+EER = 3.9670  minDCF = 0.2457  [epoch 37] [vox1_cleaned]
 ```
 
 ### Expected running time
 
-About 40 hours from the beginning to the end with the following hardware:
+About 30 hours from the beginning to the end with the following hardware:
 
 - 500 GB of RAM
 - GeForce RTX 2048 Ti (11 GB)

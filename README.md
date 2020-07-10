@@ -1,7 +1,6 @@
 # ASVtorch
 
-ASVtorch is a framework for automatic speaker recognition.
-- https://stackoverflow.com/questions/3057526/framework-vs-toolkit-vs-library
+ASVtorch is a toolkit for automatic speaker recognition.
 
 ## Main features
 
