@@ -59,10 +59,6 @@ net_resume < net
 network.resume_epoch = 23
 
 # To train network with squeeze-and-excitation:
-net_new < net
-paths.system_folder = 'full_system_new'
-network.network_class = 'asvtorch.src.networks.architectures.StandardNet2'
-
 net_se < net
 paths.system_folder = 'full_system_se'
 network.network_class = 'asvtorch.src.networks.architectures.StandardSeNet'
@@ -110,8 +106,6 @@ network.max_batch_size_in_frames = 30000
 
 emb_net < emb < net
 
-emb_net_new < emb < net_new
-
 emb_net_se < emb < net_se
 
 emb_net_resse < emb < net_resse
@@ -134,8 +128,6 @@ backend.score_norm_full_cohort_size = 2000
 backend.score_norm_adaptive_cohort_size = 200
 
 score_net < score < emb_net
-
-score_net_new < score < emb_net_new
 
 score_net_se < score < emb_net_se
 
