@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Optional
 
 import torch
+import numpy as np
 
 from asvtorch.src.settings.abstract_settings import AbstractSettings
 from asvtorch.src.settings.settings import Settings
@@ -87,13 +88,13 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
     if Settings().recipe.start_stage <= 5 <= Settings().recipe.end_stage:
 
         print('Selecting network training data...')
-        training_data = UtteranceSelector().choose_all('voxceleb1_cat_combined')
+        training_data = UtteranceSelector().choose_regex('voxceleb1_cat_combined', '^(?!id11111-G2QZRjUB_VM).*')
         training_data.combine(UtteranceSelector().choose_all('voxceleb2_cat_combined'))
         training_data.remove_short_utterances(500)  # Remove utts with less than 500 frames
         training_data.remove_speakers_with_few_utterances(10)  # Remove spks with less than 10 utts
 
         print('Selecting PLDA training data...')
-        plda_data = UtteranceSelector().choose_all('voxceleb1_cat_combined')
+        plda_data = UtteranceSelector().choose_regex('voxceleb1_cat_combined', '^(?!id11111-G2QZRjUB_VM).*')
         plda_data.select_random_speakers(500)
 
         trial_data = recipeutils.get_trial_utterance_list(trial_list_list)
@@ -146,7 +147,7 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
         print('Loading trial data...')
         trial_data = recipeutils.get_trial_utterance_list(trial_list_list)
         print('Loading PLDA data...')
-        plda_data = UtteranceSelector().choose_all('voxceleb1_cat_combined')
+        plda_data = UtteranceSelector().choose_regex('voxceleb1_cat_combined', '^(?!id11111-G2QZRjUB_VM).*')
         plda_data.combine(UtteranceSelector().choose_all('voxceleb2_cat_combined')) # use the whole data in testing mode # use the whole data in testing mode
 
         print('Extracting trial embeddings...')
@@ -174,18 +175,19 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
         plda = Plda.train_closed_form(plda_data.embeddings, plda_data.get_spk_labels(), Settings().computing.device)
 
         # Select score normalization cohort randomly from PLDA training data
-        torch.manual_seed(0)
-        normalization_embeddings = plda_data.embeddings[torch.randperm(plda_data.embeddings.size()[0])[:Settings().backend.score_norm_full_cohort_size], :]
+        #torch.manual_seed(0)
+        #normalization_embeddings = plda_data.embeddings[torch.randperm(plda_data.embeddings.size()[0])[:Settings().backend.score_norm_full_cohort_size], :]
 
         # Compute s-norm statistics
-        normalization_stats = score_normalization.compute_adaptive_snorm_stats(trial_data.embeddings, normalization_embeddings, plda, Settings().backend.plda_dim, Settings().backend.score_norm_adaptive_cohort_size)
+        #normalization_stats = score_normalization.compute_adaptive_snorm_stats(trial_data.embeddings, normalization_embeddings, plda, Settings().backend.plda_dim, Settings().backend.score_norm_adaptive_cohort_size)
 
         # Scoring and score normalization
         for trial_list in trial_list_list:
             trial_file = trial_list.get_path_to_trial_file()
             labels, indices = prepare_scoring(trial_data, trial_file)
             scores = score_trials_plda(trial_data, indices, plda)  
-            scores = score_normalization.apply_snorm(scores, normalization_stats, indices)
+            #scores = score_normalization.apply_snorm(scores, normalization_stats, indices)
+            np.savetxt(fileutils.get_score_output_file(trial_list), scores)
             eer = compute_eer(scores, labels)[0] * 100
             min_dcf = compute_min_dcf(scores, labels, 0.05, 1, 1)[0]
             output_text = 'EER = {:.4f}  minDCF = {:.4f}  [epoch {}] [{}]'.format(eer, min_dcf, epoch, trial_list.trial_list_display_name)

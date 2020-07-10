@@ -63,6 +63,22 @@ class StandardNet(StandardNetTemplate):
         self.utterance_layers.append(LinearReluBatchNormLayer(self.dim_uttlayer, self.dim_uttlayer))
         self.utterance_layers.append(nn.Linear(self.dim_uttlayer, self.n_speakers))
 
+class StandardNet2(StandardNetTemplate):
+    def __init__(self, feat_dim, n_speakers):
+        super().__init__(feat_dim, n_speakers)
+
+        self.tdnn_layers.append(CnnLayer(self.feat_dim, self.dim_featlayer, 2))
+        self.tdnn_layers.append(CnnLayer(self.dim_featlayer, self.dim_featlayer, 2))
+        self.tdnn_layers.append(CnnLayer(self.dim_featlayer, self.dim_featlayer, 3))
+        self.tdnn_layers.append(CnnLayer(self.dim_featlayer, self.dim_featlayer, 0))
+        self.tdnn_layers.append(CnnLayer(self.dim_featlayer, self.dim_statlayer, 0))
+
+        # Pooling layer
+
+        self.utterance_layers.append(LinearBatchNormLayer(self.pooling_output_dim, self.dim_uttlayer))
+        #self.utterance_layers.append(LinearReluBatchNormLayer(self.dim_uttlayer, self.dim_uttlayer))
+        self.utterance_layers.append(nn.Linear(self.dim_uttlayer, self.n_speakers))
+
 
 class StandardSeNet(StandardNetTemplate):
     def __init__(self, feat_dim, n_speakers):

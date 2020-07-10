@@ -49,7 +49,7 @@ network.eer_stop_epochs = 5
 network.max_epochs = 1000
 network.initial_learning_rate = 0.2
 network.min_loss_change_ratio = 0.01
-network.target_loss = 0.3
+network.target_loss = 0.1
 network.epochs_per_train_call = 5
 network.max_batch_size_in_frames = 15000
 network.max_consecutive_lr_updates = 2
@@ -59,6 +59,10 @@ net_resume < net
 network.resume_epoch = 23
 
 # To train network with squeeze-and-excitation:
+net_new < net
+paths.system_folder = 'full_system_new'
+network.network_class = 'asvtorch.src.networks.architectures.StandardNet2'
+
 net_se < net
 paths.system_folder = 'full_system_se'
 network.network_class = 'asvtorch.src.networks.architectures.StandardSeNet'
@@ -106,6 +110,8 @@ network.max_batch_size_in_frames = 30000
 
 emb_net < emb < net
 
+emb_net_new < emb < net_new
+
 emb_net_se < emb < net_se
 
 emb_net_resse < emb < net_resse
@@ -128,6 +134,8 @@ backend.score_norm_full_cohort_size = 2000
 backend.score_norm_adaptive_cohort_size = 200
 
 score_net < score < emb_net
+
+score_net_new < score < emb_net_new
 
 score_net_se < score < emb_net_se
 
