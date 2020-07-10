@@ -105,7 +105,7 @@ def _convert_rates(frr, far):
 
 class DetPlot():
 
-    def __init__(self, ticks: List[float] = None, axis_min: float = 0.001, axis_max: float = 0.5, **fig_kwargs):
+    def __init__(self, ticks: List[float] = None, axis_min: float = 0.001, axis_max: float = 0.5):
         self.target_scores = None
         self.nontarget_scores = None
         if not ticks:
@@ -113,9 +113,8 @@ class DetPlot():
         else:
             ticks = np.asarray(ticks)
         limits = np.asarray([axis_min, axis_max])
-        self.figure = plt.figure(**fig_kwargs)
-        plt.xlabel('False Acceptance Rate (FAR) [%]')
-        plt.ylabel('False Rejection Rate (FRR) [%]')
+        plt.xlabel('False Acceptance Rate [%]')
+        plt.ylabel('False Rejection Rate [%]')
         ticks, tick_labels, limits = _prepare_det_plot(ticks, limits)
         plt.xticks(ticks, tick_labels)
         plt.yticks(ticks, tick_labels)
@@ -131,13 +130,11 @@ class DetPlot():
         self.target_scores, self.nontarget_scores = _get_tar_and_nontar_scores(scores, labels, tar_label, nontar_label)
 
     def plot_det_curve(self, **plt_kwargs):
-        plt.figure(self.figure.number)
         frr, far, _ = _compute_det_curve(self.target_scores, self.nontarget_scores)
         frr, far = _convert_rates(frr, far)
         plt.plot(far, frr, **plt_kwargs)
 
     def plot_eer(self, **plt_kwargs):
-        plt.figure(self.figure.number)
         eer = _compute_eer(self.target_scores, self.nontarget_scores)[0]
         eer = _icdf(eer)
         if 'marker' not in plt_kwargs:
@@ -145,7 +142,6 @@ class DetPlot():
         plt.plot(eer, eer, **plt_kwargs)
 
     def plot_min_dcf(self, p_target: float, c_miss: float, c_fa: float, **plt_kwargs):
-        plt.figure(self.figure.number)
         frr, far, thresholds = _compute_det_curve(self.target_scores, self.nontarget_scores)
         min_dcf_threshold = _compute_min_dcf_tar_nontar(self.target_scores, self.nontarget_scores, p_target, c_miss, c_fa)[1]
         idx = (np.abs(thresholds - min_dcf_threshold)).argmin()
