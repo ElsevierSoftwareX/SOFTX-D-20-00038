@@ -63,36 +63,34 @@ Update the settings in the initial config file [configs/init_config.py](configs/
 ### Results in with full PLDA training data and score normalization (scoring stage)
 
 ``` txt
-EER = 2.8739  minDCF = 0.1932  [epoch 7] [vox1_original]
-EER = 2.7120  minDCF = 0.1907  [epoch 7] [vox1_cleaned]
-EER = 2.8840  minDCF = 0.1869  [epoch 7] [vox1_extended_original]
-EER = 2.7728  minDCF = 0.1846  [epoch 7] [vox1_extended_cleaned]
-EER = 5.0285  minDCF = 0.2930  [epoch 7] [vox1_hard_original]
-EER = 4.9167  minDCF = 0.2912  [epoch 7] [vox1_hard_cleaned]
+EER = 2.2173  minDCF = 0.1511  [epoch 39] [SITW core-core]
+EER = 3.7730  minDCF = 0.2130  [epoch 39] [SITW core-multi]
 ```
 
 ### Results during network training with limited PLDA data
 
 ``` txt
-EER = 5.7690  minDCF = 0.3392  [epoch 1] [vox1_original]
-EER = 5.6262  minDCF = 0.3373  [epoch 1] [vox1_cleaned]
-EER = 4.8994  minDCF = 0.3115  [epoch 2] [vox1_original]
-EER = 4.7434  minDCF = 0.3083  [epoch 2] [vox1_cleaned]
-EER = 4.6714  minDCF = 0.2991  [epoch 3] [vox1_original]
-EER = 4.5573  minDCF = 0.2970  [epoch 3] [vox1_cleaned]
-EER = 4.3479  minDCF = 0.2858  [epoch 4] [vox1_original]
-EER = 4.2436  minDCF = 0.2827  [epoch 4] [vox1_cleaned]
-EER = 4.3214  minDCF = 0.2795  [epoch 5] [vox1_original]
-EER = 4.1851  minDCF = 0.2763  [epoch 5] [vox1_cleaned]
-EER = 4.1783  minDCF = 0.2687  [epoch 6] [vox1_original]
-EER = 4.0149  minDCF = 0.2665  [epoch 6] [vox1_cleaned]
-EER = 4.1199  minDCF = 0.2568  [epoch 7] [vox1_original]
-EER = 3.9936  minDCF = 0.2545  [epoch 7] [vox1_cleaned]
+EER = 4.9195  minDCF = 0.3113  [epoch 5] [SITW core-core]
+EER = 6.8872  minDCF = 0.3717  [epoch 5] [SITW core-multi]
+EER = 3.6905  minDCF = 0.2452  [epoch 10] [SITW core-core]
+EER = 5.5668  minDCF = 0.3131  [epoch 10] [SITW core-multi]
+EER = 3.0344  minDCF = 0.2216  [epoch 15] [SITW core-core]
+EER = 5.1964  minDCF = 0.2922  [epoch 15] [SITW core-multi]
+EER = 2.9261  minDCF = 0.2145  [epoch 20] [SITW core-core]
+EER = 4.9677  minDCF = 0.2853  [epoch 20] [SITW core-multi]
+EER = 2.8415  minDCF = 0.2125  [epoch 25] [SITW core-core]
+EER = 4.8283  minDCF = 0.2835  [epoch 25] [SITW core-multi]
+EER = 2.8661  minDCF = 0.2067  [epoch 30] [SITW core-core]
+EER = 4.8804  minDCF = 0.2810  [epoch 30] [SITW core-multi]
+EER = 2.8474  minDCF = 0.2042  [epoch 35] [SITW core-core]
+EER = 4.8482  minDCF = 0.2782  [epoch 35] [SITW core-multi]
+EER = 2.8704  minDCF = 0.2053  [epoch 39] [SITW core-core]
+EER = 4.8777  minDCF = 0.2782  [epoch 39] [SITW core-multi]
 ```
 
 ### Expected running time
 
-About 36 hours from the beginning to the end with the following hardware:
+About 35 hours from the beginning to the end with the following hardware:
 
 - 500 GB of RAM
 - GeForce RTX 2048 Ti (11 GB)
