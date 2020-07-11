@@ -78,8 +78,8 @@ class StandardSeNet(StandardNetTemplate):
 
         # Pooling layer
 
-        self.utterance_layers.append(LinearReluBatchNormLayer(self.pooling_output_dim, self.dim_uttlayer))
-        self.utterance_layers.append(LinearReluBatchNormLayer(self.dim_uttlayer, self.dim_uttlayer))
+        self.utterance_layers.append(LinearBatchNormLayer(self.pooling_output_dim, self.dim_uttlayer))
+        #self.utterance_layers.append(LinearReluBatchNormLayer(self.dim_uttlayer, self.dim_uttlayer))
         self.utterance_layers.append(nn.Linear(self.dim_uttlayer, self.n_speakers))
 
 
@@ -98,8 +98,8 @@ class StandardResSeNet(StandardNetTemplate):
 
         # Pooling layer
 
-        self.utterance_layers.append(LinearReluBatchNormLayer(self.pooling_output_dim, self.dim_uttlayer))
-        self.utterance_layers.append(LinearReluBatchNormLayer(self.dim_uttlayer, self.dim_uttlayer))
+        self.utterance_layers.append(LinearBatchNormLayer(self.pooling_output_dim, self.dim_uttlayer))
+        #self.utterance_layers.append(LinearReluBatchNormLayer(self.dim_uttlayer, self.dim_uttlayer))
         self.utterance_layers.append(nn.Linear(self.dim_uttlayer, self.n_speakers))
 
 
@@ -122,8 +122,8 @@ class LargeResSeNet(StandardNetTemplate):
 
         # Pooling layer
 
-        self.utterance_layers.append(LinearReluBatchNormLayer(self.pooling_output_dim, self.dim_uttlayer))
-        self.utterance_layers.append(LinearReluBatchNormLayer(self.dim_uttlayer, self.dim_uttlayer))
+        self.utterance_layers.append(LinearBatchNormLayer(self.pooling_output_dim, self.dim_uttlayer))
+        #self.utterance_layers.append(LinearReluBatchNormLayer(self.dim_uttlayer, self.dim_uttlayer))
         self.utterance_layers.append(nn.Linear(self.dim_uttlayer, self.n_speakers))
 
 
