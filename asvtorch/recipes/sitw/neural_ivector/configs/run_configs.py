@@ -18,16 +18,15 @@ prepare_sitw < prepare
 recipe.preparation_datasets = ['sitw']
 
 
-
 # Extracts all features (we use "cat" version of voxceleb2 for training)
 fe
 recipe.start_stage = 1
 recipe.end_stage = 1
-recipe.feature_extraction_datasets = ['voxceleb1_cat', 'voxceleb2_cat', 'sitw']
+recipe.feature_extraction_datasets = ['voxceleb1', 'voxceleb2_cat', 'sitw']
 
-# Extracts "non-cat" VoxCeleb features (not needed in the recipe)
+# Extracts "non-cat" VoxCeleb2 features (not needed in the recipe)
 fe_vox2 < fe
-recipe.feature_extraction_datasets = ['voxceleb1', 'voxceleb2']
+recipe.feature_extraction_datasets = ['voxceleb2']
 
 
 
@@ -35,7 +34,7 @@ recipe.feature_extraction_datasets = ['voxceleb1', 'voxceleb2']
 aug
 recipe.start_stage = 2
 recipe.end_stage = 2
-recipe.augmentation_datasets = {'voxceleb1_cat': 5, 'voxceleb2_cat': 5}
+recipe.augmentation_datasets = {'voxceleb2_cat': 5}
 
 
 
@@ -57,14 +56,7 @@ network.target_loss = 0.1
 network.epochs_per_train_call = 5
 network.max_batch_size_in_frames = 15000
 network.max_consecutive_lr_updates = 2
-
-# To resume training from a specific epoch:
-net_resume < net
-network.resume_epoch = 23
-
-net_new < net
-paths.system_folder = 'full_system_new'
-network.network_class = 'asvtorch.src.networks.architectures.StandardNet2'
+network.weight_decay_skiplist = ('batchnorm', 'pooling_layer')
 
 # To train network with squeeze-and-excitation:
 net_se < net
@@ -107,14 +99,12 @@ network.normalize_supervector = True
 emb
 recipe.start_stage = 7
 recipe.end_stage = 7
-recipe.selected_epoch = None  # None = select the last epoch automatically
+recipe.selected_epoch = 7
 network.max_batch_size_in_frames = 30000
 
 # Below are the embedding extraction configs for different networks
 
 emb_net < emb < net
-
-emb_net_new < emb < net_new
 
 emb_net_se < emb < net_se
 
@@ -139,8 +129,6 @@ backend.score_norm_adaptive_cohort_size = 200
 
 score_net < score < emb_net
 
-score_net_new < score < emb_net_new
-
 score_net_se < score < emb_net_se
 
 score_net_resse < score < emb_net_resse
@@ -150,3 +138,33 @@ score_net_lde_isotropic < score < emb_net_lde_isotropic
 score_net_lde_tied_diagonal < score < emb_net_lde_tied_diagonal
 
 score_net_netvlad < score < emb_net_netvlad
+
+
+# statistics extration
+stats < net_lde_tied_diagonal
+recipe.start_stage = 11
+recipe.end_stage = 11
+recipe.selected_epoch = 7
+network.max_batch_size_in_frames = 20000  # Smaller than default value to save GPU memory on stats extraction phase
+
+# i-vector extractor training
+ivec < net_lde_tied_diagonal
+recipe.start_stage = 12
+recipe.end_stage = 12
+ivector.n_iterations = 5
+ivector.covariance_type = 'shared_diagonal'
+
+
+# i-vector extraction
+ext_ivec < ivec
+recipe.start_stage = 13
+recipe.end_stage = 13
+recipe.selected_iteration = 5
+
+# SCORING
+score_ivec < ext_ivec
+recipe.start_stage = 15
+recipe.end_stage = 15
+backend.plda_dim = 200
+backend.score_norm_full_cohort_size = 2000
+backend.score_norm_adaptive_cohort_size = 200
