@@ -144,7 +144,8 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
 
     # Embedding extraction, stage 7
     if Settings().recipe.start_stage <= 7 <= Settings().recipe.end_stage:
-        network = network_io.load_network(Settings().recipe.selected_epoch, Settings().computing.device)
+        epoch = Settings().recipe.selected_epoch if Settings().recipe.selected_epoch else recipeutils.find_last_epoch()
+        network = network_io.load_network(epoch, Settings().computing.device)
 
         print('Loading trial data...')
         trial_data = recipeutils.get_trial_utterance_list(trial_list_list)
@@ -165,6 +166,7 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
 
     # Embedding processing, PLDA training, Scoring, Score normalization, stage 9
     if Settings().recipe.start_stage <= 9 <= Settings().recipe.end_stage:
+        epoch = Settings().recipe.selected_epoch if Settings().recipe.selected_epoch else recipeutils.find_last_epoch()
 
         trial_data = UtteranceList.load('trial_embeddings')
         plda_data = UtteranceList.load('plda_embeddings')
@@ -191,13 +193,14 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
             np.savetxt(fileutils.get_score_output_file(trial_list, 'dnn_embedding'), scores)
             eer = compute_eer(scores, labels)[0] * 100
             min_dcf = compute_min_dcf(scores, labels, 0.05, 1, 1)[0]
-            output_text = 'EER = {:.4f}  minDCF = {:.4f}  [epoch {}] [{}]'.format(eer, min_dcf, Settings().recipe.selected_epoch, trial_list.trial_list_display_name)
+            output_text = 'EER = {:.4f}  minDCF = {:.4f}  [epoch {}] [{}]'.format(eer, min_dcf, epoch, trial_list.trial_list_display_name)
             print(output_text)
 
 
     # Extracting sufficient statistics, stage 11
     if Settings().recipe.start_stage <= 11 <= Settings().recipe.end_stage:
-        network = network_io.load_network(Settings().recipe.selected_epoch, Settings().computing.device)
+        epoch = Settings().recipe.selected_epoch if Settings().recipe.selected_epoch else recipeutils.find_last_epoch()
+        network = network_io.load_network(epoch, Settings().computing.device)
 
         print('Selecting i-vector extractor and PLDA training data...')
         training_data = UtteranceSelector().choose_regex('voxceleb1_cat_combined', '^(?!id11111-G2QZRjUB_VM).*')

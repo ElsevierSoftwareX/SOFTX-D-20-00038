@@ -101,7 +101,7 @@ network.normalize_supervector = True
 emb
 recipe.start_stage = 7
 recipe.end_stage = 7
-recipe.selected_epoch = 7
+recipe.selected_epoch = None
 network.max_batch_size_in_frames = 30000
 
 # Below are the embedding extraction configs for different networks
@@ -146,7 +146,7 @@ score_net_netvlad < score < emb_net_netvlad
 stats < net_lde_tied_diagonal
 recipe.start_stage = 11
 recipe.end_stage = 11
-recipe.selected_epoch = 7
+recipe.selected_epoch = None
 network.max_batch_size_in_frames = 20000  # Smaller than default value to save GPU memory on stats extraction phase
 
 # i-vector extractor training
