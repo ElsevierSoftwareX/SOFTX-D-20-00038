@@ -1,3 +1,6 @@
+# https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
+# Metaclass approach
+
 class Singleton(type):
     _instances = {}
     def __call__(cls, *args, **kwargs):
