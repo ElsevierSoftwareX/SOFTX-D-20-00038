@@ -10,7 +10,7 @@ ASVtorch is a toolkit for automatic speaker recognition.
 
 ## Requirements
 
-- GPU with at least 4 GB of memory (>8GB preferred)
+- GPU with at least 4 GB of memory (>8GB recommended)
 - Preferably a computing server with many CPU cores and ample amount of RAM
 - Recent Kaldi installation
   - Needed in feature extraction and data augmentation
