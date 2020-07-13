@@ -95,8 +95,8 @@ def get_score_folder() -> str:
 
 def get_score_output_file(trial_list: TrialList, prefix: str = None) -> str:
     if prefix:
-        return os.path.join(get_score_folder(), 'scores_{}'.format(trial_list.trial_file))
-    return os.path.join(get_score_folder(), 'scores_{}_{}'.format(prefix, trial_list.trial_file))
+        os.path.join(get_score_folder(), 'scores_{}_{}'.format(prefix, trial_list.trial_file))
+    return os.path.join(get_score_folder(), 'scores_{}'.format(trial_list.trial_file))
 
 def get_results_folder() -> str:
     folder = os.path.join(Settings().paths.output_folder, Settings().paths.system_folder, 'results')
