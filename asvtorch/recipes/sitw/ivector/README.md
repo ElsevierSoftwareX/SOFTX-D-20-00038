@@ -1,10 +1,11 @@
-# VoxCeleb i-vector recipe
+# SITW i-vector recipe
 
 
 ## Recipe description
 
 - Feature extraction and UBM training using Kaldi
-- I-vector extractor training using VoxCeleb2 data
+- UBM training using VoxCeleb1
+- I-vector extractor training using VoxCeleb1 and VoxCeleb2
 - PLDA scoring of `core-core` and `core-multi` trial lists
 - Outputs EERs and minDCFs
 - Similar to the recipe used in the following publication:
@@ -41,9 +42,9 @@ Update the settings in the initial config file [configs/init_config.py](configs/
 
 - To execute the recipe step-by-step run the following:
     1) `python asvtorch/recipes/sitw/ivector/run.py prepare`
-        - This will prepare VoxCeleb1 and VoxCeleb2 datasets.
+        - This will prepare VoxCeleb1, VoxCeleb2, and SITW datasets.
     2) `python asvtorch/recipes/sitw/ivector/run.py fe`
-        - This will extract MFCCs for VoxCeleb1 and VoxCeleb2.
+        - This will extract MFCCs for VoxCeleb1, VoxCeleb2, and SITW.
     3) `python asvtorch/recipes/sitw/ivector/run.py ubm`
         - This will train the UBM using Kaldi.
     4) `python asvtorch/recipes/sitw/ivector/run.py post`
