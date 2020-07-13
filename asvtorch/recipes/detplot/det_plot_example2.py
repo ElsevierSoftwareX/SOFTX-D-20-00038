@@ -26,7 +26,7 @@ for list_index, trial_list in enumerate(('voxcelebEC', 'sitw')):
     labels = np.loadtxt(key_file, usecols=2, dtype=str).tolist()
 
     ticks = [0.0002, 0.001, 0.005, 0.02, 0.05, 0.1, 0.2, 0.4]
-    det_plot = eval_metrics.DetPlot(ticks=ticks, axis_min=0.00025)       
+    det_plot = eval_metrics.DetPlot(ticks=ticks, axis_min=0.0005, axis_max=0.6)       
 
     for system in ('xvector', 'neural_ivector', 'ivector'):
         score_file = os.path.join(fileutils.get_folder_of_file(__file__), 'scorefiles', '{}_scores_{}.txt'.format(trial_list, system))
