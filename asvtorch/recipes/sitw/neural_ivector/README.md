@@ -3,7 +3,7 @@
 ## Recipe description
 
 - Feature extraction and augmentation using Kaldi
-- DNN embedding extractor (x-vector or similar) training using augmented VoxCeleb2 data (segments from the same source YouTube video concatenated together)
+- DNN embedding extractor (x-vector or similar) training using augmented VoxCeleb1 and VoxCeleb2 data (segments from the same source YouTube video concatenated together)
 - Neural i-vector training using sufficient statistics extracted from the network
 - PLDA scoring of `core-core` and `core-multi` trial lists
 - Outputs EERs and minDCFs
@@ -40,12 +40,11 @@ Update the settings in the initial config file [configs/init_config.py](configs/
 
 - To execute the recipe step-by-step run the following:
     1) `python asvtorch/recipes/sitw/neural_ivector/run.py prepare`
-        - This will prepare VoxCeleb1 and VoxCeleb2 datasets.
+        - This will prepare VoxCeleb1, VoxCeleb2, and SITW datasets.
     2) `python asvtorch/recipes/sitw/neural_ivector/run.py fe`
-        - This will extract MFCCs for VoxCeleb1 and VoxCeleb2.
+        - This will extract MFCCs for VoxCeleb1, VoxCeleb2, and SITW.
     3) `python asvtorch/recipes/sitw/neural_ivector/run.py aug`
         - This will augment the training data to 5x size.
-        - If the augmentation does not work or you want to skip it, you can change the network training and PLDA training data to use non-augmented data by modifying `run.py`: comment lines with `voxceleb2_cat_combined` and uncomment lines with `voxceleb2_cat` in stage 5 and later.
     4) `python asvtorch/recipes/sitw/neural_ivector/run.py net_lde_tied_diagonal`
         - This will train the network with LDE layer.
     5) `python asvtorch/recipes/sitw/neural_ivector/run.py emb_net_lde_tied_diagonal` (optional)
