@@ -68,42 +68,44 @@ Update the settings in the initial config file [configs/init_config.py](configs/
 ### Neural i-vector results
 
 ``` txt
-EER = 3.6374  minDCF = 0.2252  [epoch 5] [vox1_original]
-EER = 3.4938  minDCF = 0.2228  [epoch 5] [vox1_cleaned]
-EER = 3.6614  minDCF = 0.2264  [epoch 5] [vox1_extended_original]
-EER = 3.5675  minDCF = 0.2243  [epoch 5] [vox1_extended_cleaned]
-EER = 6.3793  minDCF = 0.3353  [epoch 5] [vox1_hard_original]
-EER = 6.2675  minDCF = 0.3335  [epoch 5] [vox1_hard_cleaned]
+EER = 4.6396  minDCF = 0.2889  [iteration 5] [vox1_original]
+EER = 4.4829  minDCF = 0.2866  [iteration 5] [vox1_cleaned]
+EER = 4.4693  minDCF = 0.2813  [iteration 5] [vox1_extended_original]
+EER = 4.3716  minDCF = 0.2794  [iteration 5] [vox1_extended_cleaned]
+EER = 7.4797  minDCF = 0.4171  [iteration 5] [vox1_hard_original]
+EER = 7.3724  minDCF = 0.4154  [iteration 5] [vox1_hard_cleaned]
 ```
 
 ### Results for LDE embeddings
 
 ``` txt
-EER = 3.1602  minDCF = 0.2013  [epoch 7] [vox1_original]
-EER = 3.0152  minDCF = 0.1989  [epoch 7] [vox1_cleaned]
-EER = 3.0030  minDCF = 0.1920  [epoch 7] [vox1_extended_original]
-EER = 2.9007  minDCF = 0.1899  [epoch 7] [vox1_extended_cleaned]
-EER = 5.1816  minDCF = 0.2928  [epoch 7] [vox1_hard_original]
-EER = 5.0841  minDCF = 0.2910  [epoch 7] [vox1_hard_cleaned]
+EER = 3.0170  minDCF = 0.2001  [epoch 40] [vox1_original]
+EER = 2.8609  minDCF = 0.1977  [epoch 40] [vox1_cleaned]
+EER = 2.9246  minDCF = 0.1858  [epoch 40] [vox1_extended_original]
+EER = 2.8169  minDCF = 0.1838  [epoch 40] [vox1_extended_cleaned]
+EER = 4.9086  minDCF = 0.2939  [epoch 40] [vox1_hard_original]
+EER = 4.8053  minDCF = 0.2917  [epoch 40] [vox1_hard_cleaned]
 ```
 
 ### Results during network training with limited PLDA data
 
 ``` txt
-EER = 5.5622  minDCF = 0.3418  [epoch 1] [vox1_original]
-EER = 5.4135  minDCF = 0.3398  [epoch 1] [vox1_cleaned]
-EER = 4.7986  minDCF = 0.3062  [epoch 2] [vox1_original]
-EER = 4.6743  minDCF = 0.3040  [epoch 2] [vox1_cleaned]
-EER = 4.5017  minDCF = 0.2833  [epoch 3] [vox1_original]
-EER = 4.3924  minDCF = 0.2812  [epoch 3] [vox1_cleaned]
-EER = 4.3638  minDCF = 0.2827  [epoch 4] [vox1_original]
-EER = 4.2595  minDCF = 0.2805  [epoch 4] [vox1_cleaned]
-EER = 4.1942  minDCF = 0.2781  [epoch 5] [vox1_original]
-EER = 4.0521  minDCF = 0.2759  [epoch 5] [vox1_cleaned]
-EER = 4.2790  minDCF = 0.2654  [epoch 6] [vox1_original]
-EER = 4.1851  minDCF = 0.2631  [epoch 6] [vox1_cleaned]
-EER = 4.1624  minDCF = 0.2646  [epoch 7] [vox1_original]
-EER = 4.0681  minDCF = 0.2625  [epoch 7] [vox1_cleaned]
+EER = 6.9938  minDCF = 0.4108  [epoch 5] [vox1_original]
+EER = 6.8519  minDCF = 0.4090  [epoch 5] [vox1_cleaned]
+EER = 5.9705  minDCF = 0.3545  [epoch 10] [vox1_original]
+EER = 5.8495  minDCF = 0.3525  [epoch 10] [vox1_cleaned]
+EER = 5.2387  minDCF = 0.3216  [epoch 15] [vox1_original]
+EER = 5.0997  minDCF = 0.3195  [epoch 15] [vox1_cleaned]
+EER = 4.7721  minDCF = 0.2860  [epoch 20] [vox1_original]
+EER = 4.6211  minDCF = 0.2837  [epoch 20] [vox1_cleaned]
+EER = 4.4646  minDCF = 0.2732  [epoch 25] [vox1_original]
+EER = 4.3552  minDCF = 0.2709  [epoch 25] [vox1_cleaned]
+EER = 4.3585  minDCF = 0.2697  [epoch 30] [vox1_original]
+EER = 4.2170  minDCF = 0.2675  [epoch 30] [vox1_cleaned]
+EER = 4.3585  minDCF = 0.2618  [epoch 35] [vox1_original]
+EER = 4.2489  minDCF = 0.2585  [epoch 35] [vox1_cleaned]
+EER = 4.3532  minDCF = 0.2653  [epoch 40] [vox1_original]
+EER = 4.1957  minDCF = 0.2630  [epoch 40] [vox1_cleaned]
 ```
 
 ## Notes
