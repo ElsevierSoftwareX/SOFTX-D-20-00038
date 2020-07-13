@@ -71,7 +71,7 @@ def _compute_min_dcf_tar_nontar(target_scores: np.ndarray, nontarget_scores: np.
     frr, far, thresholds = _compute_det_curve(target_scores, nontarget_scores)
     return _compute_min_dcf(frr, far, thresholds, p_target, c_miss, c_fa)
 
-# Copied from KALDI
+# Adapted from KALDI:
 def _compute_min_dcf(fnrs, fprs, thresholds, p_target, c_miss, c_fa):
     min_c_det = float("inf")
     min_c_det_threshold = thresholds[0]

@@ -46,4 +46,8 @@ ASVtorch is a toolkit for automatic speaker recognition.
 
 - See instructions from [asvtorch/recipes/voxceleb/xvector/README.md](asvtorch/recipes/voxceleb/xvector/README.md)
 - For more info on how to execute and configure experiments, see [asvtorch/src/settings/README.md](asvtorch/src/settings/README.md)
+
+## License
+
+The ASVtorch toolkit is licensed under the MIT license. See [LICENSE.txt](LICENSE.txt). A small proportion of the codes of the toolkit are modified from the Kaldi Toolkit. These codes are marked with comments, and they are licensed under their original Apache 2.0 License.
  
