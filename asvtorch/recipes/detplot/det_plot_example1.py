@@ -1,3 +1,6 @@
+# Copyright 2020 Ville Vestman
+# This file is licensed under the MIT license (see LICENSE.txt).
+
 import sys
 import os
 # Adding the project root to the path to make imports to work regardless from where this file was executed:
