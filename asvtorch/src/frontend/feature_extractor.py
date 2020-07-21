@@ -1,3 +1,6 @@
+# Copyright 2020 Ville Vestman
+# This file is licensed under the MIT license (see LICENSE.txt).
+
 from asvtorch.src.settings.settings import Settings
 from asvtorch.src.misc.singleton import Singleton
 from asvtorch.src.frontend.kaldi.kaldi_operations import extract_kaldi_features, kaldi_augment

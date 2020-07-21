@@ -1,3 +1,6 @@
+# Copyright 2020 Ville Vestman
+# This file is licensed under the MIT license (see LICENSE.txt).
+
 import os
 import time
 import random
@@ -9,7 +12,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-import asvtorch.src.networks.optimizers as optimizers
 from asvtorch.src.networks.training_dataloader import get_dataloader as get_training_dataloader
 from asvtorch.src.networks.network_testing import get_dataloader as get_validation_dataloader, compute_losses_and_accuracies
 import asvtorch.src.networks.network_io as network_io
@@ -228,23 +230,3 @@ def print_learnable_parameters(model: torch.nn.Module):
             print(name, param.numel())
 
 
-# def _init_optimizer(net, settings):
-#     if settings.optimizer == 'sgd':
-#         return optim.SGD([
-#             {'params': net.tdnn_layers.parameters(), 'lr': 1},
-#             {'params': net.pooling_layer.parameters(), 'lr': 1},
-#             {'params': net.utterance_layers.parameters(), 'lr': 1}
-#             ], weight_decay=settings.weight_decay, momentum=settings.momentum)
-#     if settings.optimizer == 'radam':
-#         return optimizers.RAdam([
-#             {'params': net.tdnn_layers.parameters(), 'lr': 1},
-#             {'params': net.pooling_layer.parameters(), 'lr': 1},
-#             {'params': net.utterance_layers.parameters(), 'lr': 1}
-#             ], weight_decay=settings.weight_decay)
-#     if settings.optimizer == 'rangerqh':
-#         return optimizers.RangerQH([
-#             {'params': net.tdnn_layers.parameters(), 'lr': 1},
-#             {'params': net.pooling_layer.parameters(), 'lr': 1},
-#             {'params': net.utterance_layers.parameters(), 'lr': 1}
-#             ], weight_decay=settings.weight_decay)
-#     sys.exit('Unsupported optimizer: {}'.format(settings.optimizer))

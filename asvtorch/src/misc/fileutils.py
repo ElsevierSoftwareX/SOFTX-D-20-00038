@@ -1,3 +1,6 @@
+# Copyright 2020 Ville Vestman
+# This file is licensed under the MIT license (see LICENSE.txt).
+
 import os
 from os.path import isfile, join
 import datetime

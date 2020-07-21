@@ -1,3 +1,6 @@
+# Copyright 2020 Ville Vestman
+# This file is licensed under the MIT license (see LICENSE.txt).
+
 import sys
 from dataclasses import dataclass, field
 from typing import Tuple, Dict, List

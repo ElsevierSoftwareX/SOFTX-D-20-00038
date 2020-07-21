@@ -1,3 +1,6 @@
+# Copyright 2020 Ville Vestman
+# This file is licensed under the MIT license (see LICENSE.txt).
+
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List, Union, Optional

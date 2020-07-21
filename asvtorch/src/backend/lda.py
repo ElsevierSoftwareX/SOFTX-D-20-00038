@@ -1,3 +1,6 @@
+# Copyright 2020 Ville Vestman
+# This file is licensed under the MIT license (see LICENSE.txt).
+
 import torch
 
 from asvtorch.src.backend.plda import _rearrange_data, _compute_within_cov, _compute_between_cov

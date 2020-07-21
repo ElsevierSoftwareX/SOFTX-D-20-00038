@@ -1,3 +1,6 @@
+# Copyright 2020 Ville Vestman
+# This file is licensed under the MIT license (see LICENSE.txt).
+
 import numpy as np
 from kaldi.util.table import VectorWriter
 import kaldi.util.io as kio

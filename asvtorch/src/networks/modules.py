@@ -1,3 +1,7 @@
+# Copyright 2020 Ville Vestman
+#           2020 Kong Aik Lee
+# This file is licensed under the MIT license (see LICENSE.txt).
+
 from functools import partial
 import sys
 
