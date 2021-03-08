@@ -27,7 +27,7 @@ where `voxceleb1` should be replaced by the name of the dataset (given by you). 
 When these files are ready, you finally have to call
 ``` python
 subprocess.run(['utils/utt2spk_to_spk2utt.pl', os.path.join(output_folder, 'utt2spk')], stdout=open(os.path.join(output_folder, 'spk2utt'), 'w'), stderr=subprocess.STDOUT, cwd=Settings().paths.kaldi_recipe_folder)
-    result = subprocess.run(['utils/fix_data_dir.sh', output_folder], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=Settings().paths.kaldi_recipe_folder)
+result = subprocess.run(['utils/fix_data_dir.sh', output_folder], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=Settings().paths.kaldi_recipe_folder)
 ```
 to finalize the dataset preparation process.
 
