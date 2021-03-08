@@ -45,7 +45,12 @@ ASVtorch is a toolkit for automatic speaker recognition.
 ## Running the VoxCeleb recipe
 
 - See instructions from [asvtorch/recipes/voxceleb/xvector/README.md](asvtorch/recipes/voxceleb/xvector/README.md)
-- For more info on how to execute and configure experiments, see [asvtorch/src/settings/README.md](asvtorch/src/settings/README.md)
+
+
+## Other instructions
+- For more information on how to execute and configure experiments, see [asvtorch/src/settings/README.md](asvtorch/src/settings/README.md)
+- To prepare custom datasets, see [data_preparation_readme.md](data_preparation_readme.md)
+- To create custom network architectures, see [custom_architectures_readme.md](custom_architectures_readme.md)
 
 ## License
 
