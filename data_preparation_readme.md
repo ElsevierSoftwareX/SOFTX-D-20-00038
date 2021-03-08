@@ -1,6 +1,6 @@
 ## Preparation of datasets
 
-The dataset preparation step creates following files (+ some others automatically):
+The dataset preparation step creates following files (+ some other files automatically):
 1) `wav.scp`
 2) `utt2spk`
 3) trial lists
