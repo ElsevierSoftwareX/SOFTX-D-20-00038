@@ -1,8 +1,9 @@
 ## Preparation of datasets
 
-In the dataset preparation step, you will need to create two files manually:
+The dataset preparation step creates following files (+ some others automatically):
 1) `wav.scp`
 2) `utt2spk`
+3) trial lists
 
 The first one is responsible for mapping utterance ids (specified by you) to the corresponding audio files in the disk. The format is the same as in Kaldi Toolkit. For example, a line in `wav.scp` could look like this:
 ``` txt 
