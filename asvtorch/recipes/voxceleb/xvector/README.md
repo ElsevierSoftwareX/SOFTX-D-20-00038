@@ -26,7 +26,7 @@ Update the settings in the initial config file [configs/init_config.py](configs/
     computing.network_dataloader_workers = 10
     computing.feature_extraction_workers = 44
     computing.use_gpu = True
-    computing.gpu_id = 0
+    computing.gpu_ids = (0,)
 ```
 
 - Change `paths.output_folder` to point to the desired output folder where all the outputs (features, lists, network models, etc...) should be stored. The folder does not need to exist beforehand.

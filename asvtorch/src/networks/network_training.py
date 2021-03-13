@@ -79,8 +79,6 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0, multigpu:
 
     for epoch in range(1, settings.epochs_per_train_call + 1):
 
-        
-
         current_learning_rate = optimizer.param_groups[0]['lr']
 
         logfilename = os.path.join(log_folder, 'gpu{}_epoch.{}.log'.format(gpu_id, epoch + resume_epoch))
@@ -136,7 +134,7 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0, multigpu:
 
         # Learning rate update:
         update_flag = torch.zeros(1).to(Settings().computing.device)
-        if(Settings().computing.local_process_rank == 0):  # Decision made based on the first processes' loss
+        if(Settings().computing.local_process_rank == 0):  # Decision made based on the loss of the first process
             prev_loss = net_module.training_loss.item()
             current_loss = np.asarray(losses).mean()
             room_for_improvement = max(Settings().network.min_room_for_improvement, prev_loss - Settings().network.target_loss)
@@ -163,7 +161,6 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0, multigpu:
             network_io.save_state(output_filename, epoch + resume_epoch, net, optimizer)
 
         if net_module.consecutive_lr_updates[0] >= Settings().network.max_consecutive_lr_updates:
-            #print('Stopping training because loss did not improve more than {:.3f}% ...'.format(Settings().network.min_loss_change * 100))
             print('GPU {}: Stopping training because reached {} consecutive LR updates!'.format(gpu_id, Settings().network.max_consecutive_lr_updates))
             return net_module, True, epoch + resume_epoch
 

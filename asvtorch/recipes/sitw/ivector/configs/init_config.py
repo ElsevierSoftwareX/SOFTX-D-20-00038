@@ -4,7 +4,7 @@ computing.ubm_training_workers = 8
 computing.ivector_dataloader_workers = 22
 computing.feature_extraction_workers = 22
 computing.use_gpu = True
-computing.gpu_id = 0
+computing.gpu_ids = (0,)
 
 paths.output_folder = '/media/ssd2/vvestman/sitw_ivector_outputs'
 paths.feature_and_list_folder = 'datasets'  # No need to update this

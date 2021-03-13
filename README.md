@@ -28,11 +28,11 @@ ASVtorch is a toolkit for automatic speaker recognition.
    1) `conda create -n asvtorch python=3.7`
    2) `conda activate asvtorch`
    3) `conda install -c pykaldi pykaldi-cpu`
-   4) Check your CUDA version with \
-        `cat /usr/local/cuda/version.txt` \
-        Get PyTorch installation command for the correct CUDA version from https://pytorch.org/ and install PyTorch. For example: \
-        `conda install pytorch torchvision cudatoolkit=9.2 -c pytorch` 
-        - Your CUDA version has to be greater than the CUDA version in PyTorch
+   4) `conda install pytorch=1.4 cudatoolkit -c pytorch` \
+   If you do not have cuda 10, try instead: \
+   `conda install pytorch=1.4 cudatoolkit=9.2 -c pytorch`
+
+      
    5) `conda install scipy matplotlib`
    6) `pip install wget`
 4) Clone ASVtorch repository
@@ -49,6 +49,7 @@ ASVtorch is a toolkit for automatic speaker recognition.
 
 ## Other instructions
 - For more information on how to execute and configure experiments, see [asvtorch/src/settings/README.md](asvtorch/src/settings/README.md)
+- To train neural networks by using multiple GPUs in parallel, see [multigpu_readme.md](multigpu_readme.md)
 - To prepare custom datasets, see [data_preparation_readme.md](data_preparation_readme.md)
 - To create custom network architectures, see [custom_architectures_readme.md](custom_architectures_readme.md)
 

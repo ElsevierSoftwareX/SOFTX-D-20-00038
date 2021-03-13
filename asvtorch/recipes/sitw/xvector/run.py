@@ -1,7 +1,7 @@
 # Copyright 2020 Ville Vestman
 # This file is licensed under the MIT license (see LICENSE.txt).
 
-# Main script for VoxCeleb/xvector recipe.
+# Main script for sitw/xvector recipe.
 
 import sys
 import os
@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Optional
 
 import torch
+import torch.distributed
 import numpy as np
 
 from asvtorch.src.settings.abstract_settings import AbstractSettings
@@ -47,6 +48,12 @@ class RecipeSettings(AbstractSettings):
     augmentation_datasets: Dict[str, int] = field(default_factory=lambda: {})
     selected_epoch: int = None  # Find the last epoch automatically
 
+    def execute_stage(self, stage: int, multigpu_supported: bool = False) -> bool:
+        return_true =  self.start_stage <= stage <= self.end_stage and (multigpu_supported or Settings().computing.local_process_rank == 0)
+        if(return_true and Settings().computing.world_size > 1):
+            torch.distributed.barrier()  # Sync all procesess before entering to the stage
+        return return_true
+
 # Initializing settings:
 Settings(os.path.join(fileutils.get_folder_of_file(__file__), 'configs', 'init_config.py')) 
 
@@ -59,10 +66,10 @@ Settings().recipe = RecipeSettings()
 # Get full path of run config file:
 run_config_file = os.path.join(fileutils.get_folder_of_file(__file__), 'configs', 'run_configs.py') 
 
-# Get run configs from command line arguments
-run_configs = sys.argv[1:]
-if not run_configs:
-    sys.exit('Give one or more run configs as argument(s)!')
+# Get run configs from command line arguments and set up distributed computing
+run_configs = recipeutils.parse_recipe_arguments_and_set_up_distributed_computing(sys.argv)
+
+Settings().print()
 
 # SITW trial lists:
 trial_list_list = [
@@ -74,21 +81,21 @@ trial_list_list = [
 for settings_string in Settings().load_settings(run_config_file, run_configs):
 
     # Preparation, stage 0
-    if Settings().recipe.start_stage <= 0 <= Settings().recipe.end_stage:     
+    if Settings().recipe.execute_stage(0):     
         data_preparation.prepare_datasets(Settings().recipe.preparation_datasets)
 
     # Feature extraction, stage 1
-    if Settings().recipe.start_stage <= 1 <= Settings().recipe.end_stage:
+    if Settings().recipe.execute_stage(1):
         for dataset in Settings().recipe.feature_extraction_datasets:
             FeatureExtractor().extract_features(dataset)
 
     # Data augmentation, stage 2
-    if Settings().recipe.start_stage <= 2 <= Settings().recipe.end_stage:
+    if Settings().recipe.execute_stage(2):
         for dataset, augmentation_factor in Settings().recipe.augmentation_datasets.items():
             FeatureExtractor().augment(dataset, augmentation_factor)
 
     # Network training, stage 5
-    if Settings().recipe.start_stage <= 5 <= Settings().recipe.end_stage:
+    if Settings().recipe.execute_stage(5, multigpu_supported=True):
 
         print('Selecting network training data...')
         training_data = UtteranceSelector().choose_regex('voxceleb1_cat_combined', '^(?!id11111-G2QZRjUB_VM).*')
@@ -96,54 +103,69 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
         training_data.remove_short_utterances(500)  # Remove utts with less than 500 frames
         training_data.remove_speakers_with_few_utterances(10)  # Remove spks with less than 10 utts
 
-        print('Selecting PLDA training data...')
-        plda_data = UtteranceSelector().choose_regex('voxceleb1_cat_combined', '^(?!id11111-G2QZRjUB_VM).*')
-        plda_data.select_random_speakers(500)
+        if(Settings().computing.local_process_rank == 0):
+            print('Selecting PLDA training data...')
+            plda_data = UtteranceSelector().choose_regex('voxceleb1_cat_combined', '^(?!id11111-G2QZRjUB_VM).*')
+            plda_data.select_random_speakers(500)
 
-        trial_data = recipeutils.get_trial_utterance_list(trial_list_list)
+            trial_data = recipeutils.get_trial_utterance_list(trial_list_list)
 
-        result_file = open(fileutils.get_new_results_file(), 'w')
-        result_file.write(settings_string + '\n\n')
+            result_file = open(fileutils.get_new_results_file(), 'w')
+            result_file.write(settings_string + '\n\n')
 
-        eer_stopper = recipeutils.EerStopper()
+            eer_stopper = recipeutils.EerStopper()
 
         for epoch in range(Settings().network.resume_epoch, Settings().network.max_epochs, Settings().network.epochs_per_train_call):
 
             network, stop_flag, epoch = network_training.train_network(training_data, epoch)
 
-            extract_embeddings(trial_data, network)
-            extract_embeddings(plda_data, network)
-            network = None
+            if Settings().computing.local_process_rank > 0:
+                network = None
 
-            vector_processor = VectorProcessor.train(plda_data.embeddings, 'cwl', Settings().computing.device)
-            trial_data.embeddings = vector_processor.process(trial_data.embeddings)
-            plda_data.embeddings = vector_processor.process(plda_data.embeddings)
+            stop_tensor = torch.zeros(1).to(Settings().computing.device)
 
-            plda = Plda.train_closed_form(plda_data.embeddings, plda_data.get_spk_labels(), Settings().computing.device)
+            if Settings().computing.local_process_rank == 0:
+            
+                extract_embeddings(trial_data, network)
+                extract_embeddings(plda_data, network)
+                network = None
 
-            for trial_list in trial_list_list:
-                trial_file = trial_list.get_path_to_trial_file()
-                labels, indices = prepare_scoring(trial_data, trial_file)
-                scores = score_trials_plda(trial_data, indices, plda)
-                eer = compute_eer(scores, labels)[0] * 100
-                eer_stopper.add_stopping_eer(eer)
-                min_dcf = compute_min_dcf(scores, labels, 0.05, 1, 1)[0]
-                output_text = 'EER = {:.4f}  minDCF = {:.4f}  [epoch {}] [{}]'.format(eer, min_dcf, epoch, trial_list.trial_list_display_name)
-                dual_print(result_file, output_text)
-            dual_print(result_file, '')
+                vector_processor = VectorProcessor.train(plda_data.embeddings, 'cwl', Settings().computing.device)
+                trial_data.embeddings = vector_processor.process(trial_data.embeddings)
+                plda_data.embeddings = vector_processor.process(plda_data.embeddings)
 
-            trial_data.embeddings = None  # Release GPU memory (?)
-            plda_data.embeddings = None
-            torch.cuda.empty_cache()
+                plda = Plda.train_closed_form(plda_data.embeddings, plda_data.get_spk_labels(), Settings().computing.device)
 
-            if eer_stopper.stop() or stop_flag:
-                break
+                for trial_list in trial_list_list:
+                    trial_file = trial_list.get_path_to_trial_file()
+                    labels, indices = prepare_scoring(trial_data, trial_file)
+                    scores = score_trials_plda(trial_data, indices, plda)
+                    eer = compute_eer(scores, labels)[0] * 100
+                    eer_stopper.add_stopping_eer(eer)
+                    min_dcf = compute_min_dcf(scores, labels, 0.05, 1, 1)[0]
+                    output_text = 'EER = {:.4f}  minDCF = {:.4f}  [epoch {}] [{}]'.format(eer, min_dcf, epoch, trial_list.trial_list_display_name)
+                    dual_print(result_file, output_text)
+                dual_print(result_file, '')
 
-        result_file.close()
+                trial_data.embeddings = None  # Release GPU memory (?)
+                plda_data.embeddings = None
+                torch.cuda.empty_cache()
 
+                if eer_stopper.stop() or stop_flag:
+                    stop_tensor[0] = 1
+
+            if(Settings().computing.world_size > 1):
+                torch.distributed.broadcast(stop_tensor, 0)
+
+            if(stop_tensor[0] == 1):
+                break                
+
+        if(Settings().computing.local_process_rank == 0):
+            result_file.close()
+        
 
     # Embedding extraction, stage 7
-    if Settings().recipe.start_stage <= 7 <= Settings().recipe.end_stage:
+    if Settings().recipe.execute_stage(7):
         epoch = Settings().recipe.selected_epoch if Settings().recipe.selected_epoch else recipeutils.find_last_epoch()
         network = network_io.load_network(epoch, Settings().computing.device)
 
@@ -165,7 +187,7 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
 
 
     # Embedding processing, PLDA training, Scoring, Score normalization, stage 9
-    if Settings().recipe.start_stage <= 9 <= Settings().recipe.end_stage:
+    if Settings().recipe.execute_stage(9):
         epoch = Settings().recipe.selected_epoch if Settings().recipe.selected_epoch else recipeutils.find_last_epoch()
 
         trial_data = UtteranceList.load('trial_embeddings')
@@ -196,5 +218,5 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
             output_text = 'EER = {:.4f}  minDCF = {:.4f}  [epoch {}] [{}]'.format(eer, min_dcf, epoch, trial_list.trial_list_display_name)
             print(output_text)
 
-print('All done!')
+print('Process {}: All done!'.format(Settings().computing.local_process_rank))
             

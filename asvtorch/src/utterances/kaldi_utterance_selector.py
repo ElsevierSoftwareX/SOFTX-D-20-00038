@@ -118,7 +118,7 @@ def _get_kaldi_dataset_files(dataset: str) -> Tuple[str, str, str, str]:
     list_folder = fileutils.get_list_folder(dataset)
     feat_scp_file = os.path.join(list_folder, 'feats.scp')
     vad_scp_file = os.path.join(list_folder, 'vad.scp')
-    temp_vad_scp_file = os.path.join(list_folder, 'temp_vad_{}_{}.scp'.format(Settings().computing.local_process_rank, random.randint(0,30000)))  # To prevent multiple processes messing with the same file
+    temp_vad_scp_file = os.path.join(list_folder, 'temp_vad_{}_{}.scp'.format(Settings().computing.local_process_rank, random.randint(0, 1000000)))  # To prevent multiple processes messing with the same file
     utt2spk_file = os.path.join(list_folder, 'utt2spk')
     return feat_scp_file, vad_scp_file, temp_vad_scp_file, utt2spk_file
 

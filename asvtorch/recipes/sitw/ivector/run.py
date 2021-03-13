@@ -1,7 +1,7 @@
 # Copyright 2020 Ville Vestman
 # This file is licensed under the MIT license (see LICENSE.txt).
 
-# Main script for VoxCeleb/ivector recipe.
+# Main script for sitw/ivector recipe.
 
 import sys
 import os
@@ -59,6 +59,8 @@ run_config_file = os.path.join(fileutils.get_folder_of_file(__file__), 'configs'
 run_configs = sys.argv[1:]
 if not run_configs:
     sys.exit('Give one or more run configs as argument(s)!')
+
+Settings().print()
 
 # SITW trial lists:
 trial_list_list = [

@@ -1,7 +1,7 @@
 # Copyright 2020 Ville Vestman
 # This file is licensed under the MIT license (see LICENSE.txt).
 
-# Main script for VoxCeleb/xvector recipe.
+# Main script for voxceleb/xvector recipe.
 
 import sys
 import os
@@ -12,7 +12,6 @@ os.environ["NUMEXPR_NUM_THREADS"] = '1'
 os.environ["OMP_NUM_THREADS"] = '1'
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional
-import time
 
 import torch
 import torch.distributed
@@ -67,10 +66,7 @@ Settings().recipe = RecipeSettings()
 # Get full path of run config file:
 run_config_file = os.path.join(fileutils.get_folder_of_file(__file__), 'configs', 'run_configs.py') 
 
-
-
-
-# Get run configs from command line arguments
+# Get run configs from command line arguments and set up distributed computing
 run_configs = recipeutils.parse_recipe_arguments_and_set_up_distributed_computing(sys.argv)
 
 Settings().print()
@@ -110,22 +106,17 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
     # Network training, stage 5
     if Settings().recipe.execute_stage(5, multigpu_supported=True):
 
-        # To lessen the change of random error presumably caused by parallel access to kaldi ark files
-        time.sleep(Settings().computing.local_process_rank * 5)
-
-        # Training datas changed from voxceleb2_cat_combined to vox1 for testing
-
         print('Selecting network training data...')
-        training_data = UtteranceSelector().choose_all('voxceleb1') # combined = augmented version
-        #training_data = UtteranceSelector().choose_all('voxceleb2_cat_combined') # non-augmented
+        training_data = UtteranceSelector().choose_all('voxceleb2_cat_combined') # combined = augmented version
+        #training_data = UtteranceSelector().choose_all('voxceleb2_cat') # non-augmented
         training_data.remove_short_utterances(500)  # Remove utts with less than 500 frames
         training_data.remove_speakers_with_few_utterances(10)  # Remove spks with less than 10 utts
 
         if(Settings().computing.local_process_rank == 0):
             print('Selecting PLDA training data...')
-            plda_data = UtteranceSelector().choose_all('voxceleb1')
+            plda_data = UtteranceSelector().choose_all('voxceleb2_cat_combined')
             #plda_data = UtteranceSelector().choose_random('voxceleb2_cat', 40000) # non-augmented
-            plda_data.select_random_speakers(50)
+            plda_data.select_random_speakers(500)
 
             trial_data = recipeutils.get_trial_utterance_list(small_trial_list_list)
 
@@ -148,8 +139,6 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
                 extract_embeddings(trial_data, network)
                 extract_embeddings(plda_data, network)
                 network = None
-
-                print_embedding_stats(plda_data.embeddings)
 
                 vector_processor = VectorProcessor.train(plda_data.embeddings, 'cwl', Settings().computing.device)
                 trial_data.embeddings = vector_processor.process(trial_data.embeddings)
@@ -214,8 +203,6 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
         trial_data = UtteranceList.load('trial_embeddings')
         plda_data = UtteranceList.load('plda_embeddings')
 
-        print_embedding_stats(plda_data.embeddings)
-
         vector_processor = VectorProcessor.train(plda_data.embeddings, 'cwl', Settings().computing.device)
         trial_data.embeddings = vector_processor.process(trial_data.embeddings)
         plda_data.embeddings = vector_processor.process(plda_data.embeddings)
@@ -241,7 +228,4 @@ for settings_string in Settings().load_settings(run_config_file, run_configs):
             output_text = 'EER = {:.4f}  minDCF = {:.4f}  [epoch {}] [{}]'.format(eer, min_dcf, epoch, trial_list.trial_list_display_name)
             print(output_text)
 
-#if(Settings().computing.world_size > 1):
-#            torch.distributed.barrier()  # Sync all procesess to ensure that no process is left waiting in broadcast
 print('Process {}: All done!'.format(Settings().computing.local_process_rank))
-            

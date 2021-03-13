@@ -20,4 +20,3 @@ def dual_print(print_file: TextIO, text: str):
     print(text)
     print_file.write(text + '\n')
     print_file.flush()
-        
