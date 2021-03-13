@@ -3,13 +3,19 @@
 Neural networks in `voxceleb/xvector` and `sitw/xvector` recipes can be trained using multiple GPUs. The toolkit achieves this by using `DistributedDataParallel` and `torch.distributed.launch` utilities of PyTorch.
 
 MultiGpu training can be started with a command:\
-`python -m torch.distributed.launch --nproc_per_node=2 asvtorch/recipes/voxceleb/xvector/run.py net`
-instead of typical single GPU execution:\
-`python asvtorch/recipes/voxceleb/xvector/run.py net`\
+```txt
+python -m torch.distributed.launch --nproc_per_node=2 asvtorch/recipes/voxceleb/xvector/run.py net
+```
+instead of typical single GPU execution:
+```txt
+python asvtorch/recipes/voxceleb/xvector/run.py net
+```
 Here `--nproc_per_node` specifies the number of GPUs. By default, the above command will use the first two GPUs that you have (or that are visible as determined by CUDA_VISIBLE_DEVICES environment variable). 
 
-`Settings().computing.gpu_ids` allows you to select which GPUs will be used. For example if you have four GPUs and want to use all except the second GPU, then set `computing.gpu_ids=(0,2,3)` and run\
-`python -m torch.distributed.launch --nproc_per_node=3 asvtorch/recipes/voxceleb/xvector/run.py net`\
+`Settings().computing.gpu_ids` allows you to select which GPUs will be used. For example if you have four GPUs and want to use all except the second GPU, then set `computing.gpu_ids=(0,2,3)` and run
+```txt
+python -m torch.distributed.launch --nproc_per_node=3 asvtorch/recipes/voxceleb/xvector/run.py net
+```
 The best places to change `computing.gpu_ids` setting is in either in the `init_config.py` or `run_configs.py` file of the recipe.
 
 
@@ -48,10 +54,14 @@ network.frame_layer_size = 1024
 network.stat_size = 2000
 ```
 
-And then you can execute back to back \
-`python asvtorch/recipes/voxceleb/xvector/run.py net`\
-and \
-`python asvtorch/recipes/voxceleb/xvector/run.py larger_net`\.
+And then you can execute back to back
+```txt
+python asvtorch/recipes/voxceleb/xvector/run.py net
+```
+and
+```txt
+python asvtorch/recipes/voxceleb/xvector/run.py larger_net
+```
 
 This will train two networks at the same time. The first network is trained using GPU 0 and will be saved to a relative folder called `system`. The second network is trained using GPU 1 and will be saved to a relative folder called `larger_system`.
 
