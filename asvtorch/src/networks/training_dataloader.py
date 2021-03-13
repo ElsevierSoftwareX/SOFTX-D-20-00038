@@ -33,6 +33,7 @@ class TrainingDataset(Dataset):
         self.create_batches(seed)
 
     def create_batches(self, seed):
+        minibatch_size = Settings().network.minibatch_size // Settings().computing.world_size  ## Keep effective minibatch size the same in multiprocessing
         np.random.seed(seed)
         random.seed(seed)
         print('Creating minibatches...')
@@ -43,16 +44,16 @@ class TrainingDataset(Dataset):
             spk2data[key].name = key
             spk2data[key] = SpeakerData(spk2data[key], deque(spk2data[key].utterances))
         spks = list(spk2data.keys())
-        number_of_minibathes = math.ceil(Settings().network.utts_per_speaker_in_epoch * len(spks) / Settings().network.minibatch_size)
+        number_of_minibathes = math.ceil(Settings().network.utts_per_speaker_in_epoch * len(spks) / minibatch_size)
         print('One epoch contains...')
         print('  - {} speech clips from each of {} training speakers'.format(Settings().network.utts_per_speaker_in_epoch, len(spks)))
-        print('  - {} minibatches of size {}'.format(number_of_minibathes, Settings().network.minibatch_size))
+        print('  - {} minibatches of size {}'.format(number_of_minibathes, minibatch_size))
         spk_deque = deque()
         self.batch_data = []
         for _ in range(number_of_minibathes):
             self.batch_data.append([])
             clip_length = np.random.randint(Settings().network.min_clip_size, Settings().network.max_clip_size + 1)
-            for _ in range(Settings().network.minibatch_size):
+            for _ in range(minibatch_size):
                 if not spk_deque:
                     shuffled_speakers = spks.copy()
                     random.shuffle(shuffled_speakers)
@@ -62,6 +63,15 @@ class TrainingDataset(Dataset):
                     spk = spk_deque.popleft()
                     next_utt, clip_indices = _select_next_clip(spk2data[spk], clip_length)
                 self.batch_data[-1].append((next_utt, clip_indices))
+
+        # Make the number of minibatches divisable by world size:
+        remainder = len(self.batch_data) % Settings().computing.world_size
+        if remainder > 0:
+            self.batch_data = self.batch_data[:-remainder]
+
+        # Split minibatches to different processes:
+        self.batch_data = self.batch_data[Settings().computing.local_process_rank::Settings().computing.world_size]
+        
         print('Minibatches created!')
 
     def __len__(self):

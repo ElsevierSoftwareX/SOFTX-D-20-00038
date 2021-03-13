@@ -9,6 +9,8 @@ import builtins
 
 import numpy as np
 import torch
+import torch.distributed
+from torch.nn.parallel import DistributedDataParallel
 import torch.nn as nn
 import torch.optim as optim
 
@@ -21,7 +23,7 @@ from asvtorch.src.frontend.featureloaders.featureloader import FeatureLoader
 import asvtorch.src.misc.fileutils as fileutils
 
 
-def train_network(training_data: UtteranceList, resume_epoch: int = 0):
+def train_network(training_data: UtteranceList, resume_epoch: int = 0, multigpu: bool = True):
 
     settings = Settings().network
 
@@ -39,16 +41,22 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0):
     training_data_subset = _select_random_subset(training_data, settings.validation_utterances)
 
     training_dataloader = get_training_dataloader(training_data)
+ 
     validation_dataloader_1 = get_validation_dataloader(training_data_subset)
     validation_dataloader_2 = get_validation_dataloader(validation_data)
 
     net = network_io.initialize_net(feat_dim, n_speakers)
     net.to(Settings().computing.device)
-
+    net_module = net
+    gpu_id = Settings().computing.local_gpu_id
+    if(multigpu and Settings().computing.world_size > 1):
+        net = DistributedDataParallel(net, device_ids=[gpu_id], output_device=gpu_id)
+        net_module = net.module
+        
     print_learnable_parameters(net)
 
     total_params = sum(p.numel() for p in net.parameters() if p.requires_grad)
-    print('Number of trainable parameters: {}'.format(total_params))
+    print_once('Number of trainable parameters: {}'.format(total_params))
 
     criterion = nn.CrossEntropyLoss()
 
@@ -60,41 +68,39 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0):
 
     if resume_epoch < 0:
         resume_epoch = -resume_epoch
-        print('Computing ASV metrics for epoch {}...'.format(resume_epoch))
+        print_once('Computing ASV metrics for epoch {}...'.format(resume_epoch))
         network_io.load_state(output_filename, resume_epoch, net, optimizer, Settings().computing.device)
         return net, True, resume_epoch
     elif resume_epoch > 0:
-        print('Resuming network training from epoch {}...'.format(resume_epoch))
+        print_once('Resuming network training from epoch {}...'.format(resume_epoch))
         network_io.load_state(output_filename, resume_epoch, net, optimizer, Settings().computing.device)
 
-    #net = nn.DataParallel(net, device_ids=Settings().computing.gpu_ids)
     net.train()
 
     for epoch in range(1, settings.epochs_per_train_call + 1):
 
-        start_time = time.time()
+        
 
-        #print('Setting initial learning rates for this epoch...')
         current_learning_rate = optimizer.param_groups[0]['lr']
-        # start_lr, end_lr = _get_learning_rates_for_epoch(epoch + resume_epoch, settings)
-        # current_learning_rate = start_lr
-        # _update_learning_rate(optimizer, current_learning_rate, settings)
 
-        logfilename = os.path.join(log_folder, 'epoch.{}.log'.format(epoch + resume_epoch))
+        logfilename = os.path.join(log_folder, 'gpu{}_epoch.{}.log'.format(gpu_id, epoch + resume_epoch))
         logfile = open(logfilename, 'w')
-        print('Log file created: {}'.format(logfilename))
+        print('GPU {}: Log file created: {}'.format(gpu_id, logfilename))
 
-        print('Shuffling training data...')
+        print('GPU {}: Shuffling training data...'.format(gpu_id))
         training_dataloader.dataset.shuffle_and_rebatch(epoch+resume_epoch)
 
         training_loss = 0
         optimizer.zero_grad()
 
+        if(Settings().computing.world_size > 1):
+            torch.distributed.barrier()  # Sync processes before timing for nicer outputs
+        start_time = time.time()
+
         # For automatic learning rate scheduling:
         losses = []
-        print('Iterating over training minibatches...')
+        print('GPU {}: Iterating over training minibatches...'.format(gpu_id))
          
-
         for i, batch in enumerate(training_dataloader):
 
             # Copying data to GPU:
@@ -111,11 +117,6 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0):
                 optimizer.step()
                 optimizer.zero_grad()
 
-            # Updating learning rate:
-            #if i % settings.learning_rate_update_interval == settings.learning_rate_update_interval - 1:
-            #    current_learning_rate = start_lr - (start_lr - end_lr) * i / len(training_dataloader)
-            #    _update_learning_rate(optimizer, current_learning_rate, settings)
-
             minibatch_loss = loss.item() * settings.optimizer_step_interval
             losses.append(minibatch_loss)
             training_loss += minibatch_loss
@@ -125,51 +126,50 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0):
                 if i % (settings.print_interval * settings.accuracy_print_interval) == settings.print_interval * settings.accuracy_print_interval - 1:
                     torch.cuda.empty_cache()
                     val_data = compute_losses_and_accuracies((validation_dataloader_1, validation_dataloader_2), net, criterion)
-                    output = 'Epoch {}, Time: {:.0f} s, Batch {}/{}, lr: {:.6f}, train-loss: {:.3f}, subset-loss: {:.3f}, val-loss: {:.3f}, subset-acc: {:.3f} val-acc: {:.3f}'.format(epoch + resume_epoch, time.time() - start_time, i + 1, len(training_dataloader), current_learning_rate, training_loss / settings.print_interval, val_data[0][0], val_data[1][0], val_data[0][1], val_data[1][1])
+                    output = 'GPU {}: Epoch {}, Time: {:.0f} s, Batch {}/{}, lr: {:.6f}, train-loss: {:.3f}, subset-loss: {:.3f}, val-loss: {:.3f}, subset-acc: {:.3f} val-acc: {:.3f} '.format(gpu_id, epoch + resume_epoch, time.time() - start_time, i + 1, len(training_dataloader), current_learning_rate, training_loss / settings.print_interval, val_data[0][0], val_data[1][0], val_data[0][1], val_data[1][1])
                     torch.cuda.empty_cache()
                 else:
-                    output = 'Epoch {}, Time: {:.0f} s, Batch {}/{}, lr: {:.6f}, train-loss: {:.3f}'.format(epoch + resume_epoch, time.time() - start_time, i + 1, len(training_dataloader), current_learning_rate, training_loss / settings.print_interval)
+                    output = 'GPU {}: Epoch {}, Time: {:.0f} s, Batch {}/{}, lr: {:.6f}, train-loss: {:.3f} '.format(gpu_id, epoch + resume_epoch, time.time() - start_time, i + 1, len(training_dataloader), current_learning_rate, training_loss / settings.print_interval)
                 print(output)
                 logfile.write(output + '\n')
                 training_loss = 0
 
         # Learning rate update:
-        prev_loss = net.training_loss.item()
-        current_loss = np.asarray(losses).mean()
-        room_for_improvement = max(Settings().network.min_room_for_improvement, prev_loss - Settings().network.target_loss)
-        loss_change = (prev_loss - current_loss) / room_for_improvement
-        print('Average training loss reduced {:.2f}% from the previous epoch.'.format(loss_change*100))
-        if loss_change < Settings().network.min_loss_change_ratio:
+        update_flag = torch.zeros(1).to(Settings().computing.device)
+        if(Settings().computing.local_process_rank == 0):  # Decision made based on the first processes' loss
+            prev_loss = net_module.training_loss.item()
+            current_loss = np.asarray(losses).mean()
+            room_for_improvement = max(Settings().network.min_room_for_improvement, prev_loss - Settings().network.target_loss)
+            loss_change = (prev_loss - current_loss) / room_for_improvement
+            print('GPU {}: Average training loss reduced {:.2f}% from the previous epoch.'.format(gpu_id, loss_change*100))
+            if loss_change < Settings().network.min_loss_change_ratio:
+                update_flag[0] = 1
+                print('GPU {}: Because loss change {:.2f}% <= {:.2f}%, the learning rate is halved: {} --> {}'.format(gpu_id, loss_change*100, Settings().network.min_loss_change_ratio*100, optimizer.param_groups[0]['lr'] * 2, optimizer.param_groups[0]['lr']))
+                print('GPU {}: Consecutive LR updates: {}'.format(gpu_id, net_module.consecutive_lr_updates[0]))
+            else:
+                net_module.consecutive_lr_updates[0] = 0
+
+            net_module.training_loss[0] = current_loss
+
+        if(Settings().computing.world_size > 1):  # Broadcast decision to all processes
+            torch.distributed.broadcast(update_flag, 0)
+
+        if(update_flag[0] == 1):
             for param_group in optimizer.param_groups:
                 param_group['lr'] = param_group['lr']/2
-            net.consecutive_lr_updates[0] += 1
-            print('Because loss change {:.2f}% <= {:.2f}%, the learning rate is halved: {} --> {}'.format(loss_change*100, Settings().network.min_loss_change_ratio*100, optimizer.param_groups[0]['lr'] * 2, optimizer.param_groups[0]['lr']))
-            print('Consecutive LR updates: {}'.format(net.consecutive_lr_updates[0]))
-        else:
-            net.consecutive_lr_updates[0] = 0
+            net_module.consecutive_lr_updates[0] += 1    
+    
+        if(Settings().computing.local_process_rank == 0): 
+            network_io.save_state(output_filename, epoch + resume_epoch, net, optimizer)
 
-        net.training_loss[0] = current_loss
-        network_io.save_state(output_filename, epoch + resume_epoch, net, optimizer)
-
-        if net.consecutive_lr_updates[0] >= Settings().network.max_consecutive_lr_updates:
+        if net_module.consecutive_lr_updates[0] >= Settings().network.max_consecutive_lr_updates:
             #print('Stopping training because loss did not improve more than {:.3f}% ...'.format(Settings().network.min_loss_change * 100))
-            print('Stopping training because reached {} consecutive LR updates!'.format(Settings().network.max_consecutive_lr_updates))
-            return net, True, epoch + resume_epoch
+            print('GPU {}: Stopping training because reached {} consecutive LR updates!'.format(gpu_id, Settings().network.max_consecutive_lr_updates))
+            return net_module, True, epoch + resume_epoch
 
     logfile.close()
-    return net, False, epoch + resume_epoch
 
-
-# def _get_learning_rates_for_epoch(epoch, settings):
-#     if epoch <= len(settings.learning_rate_schedule):
-#         start_lr = settings.learning_rate_schedule[epoch-1]
-#     else:
-#         start_lr = settings.learning_rate_schedule[-1]
-#     if epoch + 1 <= len(settings.learning_rate_schedule):
-#         end_lr = settings.learning_rate_schedule[epoch]
-#     else:
-#         end_lr = settings.learning_rate_schedule[-1]
-#     return start_lr, end_lr
+    return net_module, False, epoch + resume_epoch
 
 
 
@@ -197,11 +197,6 @@ def _select_random_subset(data, n):
     subset_data = UtteranceList([data[i] for i in np.nditer(indices)], name='training_subset')
     return subset_data
 
-# def _update_learning_rate(optimizer, learning_rate, settings):
-#     optimizer.param_groups[0]['lr'] = learning_rate * settings.learning_rate_factor_for_frame_layers * settings.general_learning_rate_factor
-#     optimizer.param_groups[1]['lr'] = learning_rate * settings.learning_rate_factor_for_pooling_layer * settings.general_learning_rate_factor
-#     optimizer.param_groups[2]['lr'] = learning_rate * settings.general_learning_rate_factor
-
 def _init_optimizer(net, settings):
     params = get_weight_decay_param_groups(net, settings.weight_decay_skiplist)
     if settings.optimizer == 'sgd':
@@ -228,5 +223,9 @@ def print_learnable_parameters(model: torch.nn.Module):
     for name, param in model.named_parameters():
         if param.requires_grad:
             print(name, param.numel())
+
+def print_once(string: str):
+    if(Settings().computing.local_process_rank == 0):
+        print(str)
 
 

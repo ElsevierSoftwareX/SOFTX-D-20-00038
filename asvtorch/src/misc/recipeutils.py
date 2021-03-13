@@ -1,14 +1,51 @@
 # Copyright 2020 Ville Vestman
 # This file is licensed under the MIT license (see LICENSE.txt).
 
-from typing import NamedTuple, Iterable
+from typing import NamedTuple, Iterable, List
 import os
 import sys
+
+import torch.distributed
 
 from asvtorch.src.settings.settings import Settings
 from asvtorch.src.utterances.utterance_list import UtteranceList
 from asvtorch.src.utterances.utterance_selector import UtteranceSelector
 import asvtorch.src.misc.fileutils as fileutils
+
+
+def parse_recipe_arguments_and_set_up_distributed_computing(arguments : List[str]) -> List[str]:
+    arguments_missing = False
+    distributed = True    
+    arguments = arguments[1:]
+    if not arguments:
+        arguments_missing = True      
+    else:
+        if arguments[0].startswith('--local_rank='):
+            torch.distributed.init_process_group('NCCL', init_method='env://')
+            Settings().computing.world_size = torch.distributed.get_world_size()
+            if Settings().computing.world_size > 1:
+                local_rank = int(arguments[0].split('=')[-1])
+                Settings().computing.local_process_rank = local_rank
+                if(local_rank == 0):
+                    print("Using distributed computing with {} processes (and GPUs)".format(Settings().computing.world_size))
+            else:
+                distributed = False
+            arguments = arguments[1:]
+            if not arguments:
+                arguments_missing = True
+        else:
+            distributed = False
+           
+    if arguments_missing:
+        sys.exit('Give one or more run configs as argument(s)!')
+
+    if not distributed:
+        print("Using single GPU")
+        Settings().computing.world_size = 1
+        Settings().computing.local_process_rank = 0
+
+    return arguments
+
 
 def find_last_epoch():
     epoch = 1

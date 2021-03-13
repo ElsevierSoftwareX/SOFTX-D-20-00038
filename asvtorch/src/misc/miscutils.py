@@ -16,8 +16,8 @@ def print_embedding_stats(embeddings: torch.Tensor):
         print('mean =  {:.10f}  std = {:.10f}   [Dim {}]'.format(means[i], stds[i], i+1))
 
 
-
 def dual_print(print_file: TextIO, text: str):
     print(text)
     print_file.write(text + '\n')
     print_file.flush()
+        

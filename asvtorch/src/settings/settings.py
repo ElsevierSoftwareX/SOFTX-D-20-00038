@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from typing import Tuple, Dict, List
 
 import torch
+import torch.cuda
 
 from asvtorch.src.settings.abstract_settings import AbstractSettings
 
@@ -29,8 +30,12 @@ class ComputingSettings(AbstractSettings):
     network_dataloader_workers: int = 10
     feature_extraction_workers: int = 44
     use_gpu: bool = True  # If false, then use CPU
-    gpu_id: int = 0  # Which GPU to use?
-    device: torch.device = field(init=False)
+    gpu_ids: Tuple[int] = (0,)  # Which GPUs to use?
+    
+    local_process_rank: int = 0  # Automatically updated by distributed computing scripts
+    local_gpu_id: int = 0  # Automatically updated by distributed computing scripts
+    world_size: int = 1  # How many processes in distributed computing? Automatically set.
+    device: torch.device = field(init=False)  # Automatically set.
 
 
 @dataclass
@@ -178,7 +183,6 @@ class Settings(AbstractSettings):
         # Initial settings
         if self.init_settings_file is not None:
             self.set_initial_settings(self.init_settings_file)
-        self.print()
 
     def post_update_call(self):
 
@@ -200,9 +204,16 @@ class Settings(AbstractSettings):
         # Set GPU device
         self.computing.device = torch.device("cpu")
         if torch.cuda.is_available():
-            self.computing.device = torch.device('cuda:{}'.format(self.computing.gpu_id))
+            self._set_local_gpu_id_using_local_rank()
+            self.computing.device = torch.device('cuda:{}'.format(self.computing.local_gpu_id))
+            torch.cuda.set_device(self.computing.device)
             torch.backends.cudnn.benchmark = False
-            #torch.cuda.set_device(1)
-            print('Using GPU (gpu_id = {})!'.format(self.computing.gpu_id))
+            print('Using GPU (gpu_id = {})!'.format(self.computing.local_gpu_id))
         else:
             print('Cuda is not available! Using CPU!')
+
+    def _set_local_gpu_id_using_local_rank(self):
+        if len(self.computing.gpu_ids) < self.computing.world_size: # not enough gpu_ids, so using identity mapping
+            self.computing.local_gpu_id = self.computing.local_process_rank
+        else:
+            self.computing.local_gpu_id = self.computing.gpu_ids[self.computing.local_process_rank]

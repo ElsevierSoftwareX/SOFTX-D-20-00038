@@ -118,7 +118,7 @@ def _get_kaldi_dataset_files(dataset: str) -> Tuple[str, str, str, str]:
     list_folder = fileutils.get_list_folder(dataset)
     feat_scp_file = os.path.join(list_folder, 'feats.scp')
     vad_scp_file = os.path.join(list_folder, 'vad.scp')
-    temp_vad_scp_file = os.path.join(list_folder, 'temp_vad.scp')
+    temp_vad_scp_file = os.path.join(list_folder, 'temp_vad_{}_{}.scp'.format(Settings().computing.local_process_rank, random.randint(0,30000)))  # To prevent multiple processes messing with the same file
     utt2spk_file = os.path.join(list_folder, 'utt2spk')
     return feat_scp_file, vad_scp_file, temp_vad_scp_file, utt2spk_file
 
@@ -154,14 +154,14 @@ def _choose_utterances(dataset: str, selected_utts: Optional[OrderedSet]) -> Utt
                 out_vad.write('{} {}\n'.format(parts1[0], vad_rxfilename))
                 utts.append(parts1[0])
                 spks.append(parts3[1].strip())
-    temp_vad_scp_file = 'scp:' + temp_vad_scp_file
-    reader = ktable.SequentialVectorReader(temp_vad_scp_file)
+    reader = ktable.SequentialVectorReader('scp:' + temp_vad_scp_file)
     frame_selectors = []
     for _, value in reader:
         boolean_selectors = value.numpy().astype(bool)
         if not Settings().features.sad_enabled:
             boolean_selectors[:] = True
         frame_selectors.append(FrameSelector(boolean_selectors))
+    os.remove(temp_vad_scp_file)
     utterances = []
     if selected_utts is None:
         for feat, vad, utt, spk in zip(feat_rxfilenames, frame_selectors, utts, spks):

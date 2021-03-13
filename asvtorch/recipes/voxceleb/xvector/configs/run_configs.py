@@ -40,18 +40,21 @@ net
 paths.system_folder = 'full_system_default'
 recipe.start_stage = 5
 recipe.end_stage = 5
-network.min_clip_size = 200
-network.max_clip_size = 200
+network.min_clip_size = 100  # changed from 200
+network.max_clip_size = 100  # changed from 200
 network.print_interval = 500
 network.weight_decay = 0.001
-network.utts_per_speaker_in_epoch = 300
+network.utts_per_speaker_in_epoch = 3000  # changed from 300
+network.minibatch_size = 256  # added this line
+network.frame_layer_size = 200 # added line
+network.stat_size = 200 # added line
 network.eer_stop_epochs = 5
 network.max_epochs = 1000
 network.initial_learning_rate = 0.2
 network.min_loss_change_ratio = 0.01
 network.target_loss = 0.1
 network.epochs_per_train_call = 5
-network.max_batch_size_in_frames = 15000
+network.max_batch_size_in_frames = 5000  # changed from 15000
 network.max_consecutive_lr_updates = 2
 
 # To resume training from a specific epoch:
