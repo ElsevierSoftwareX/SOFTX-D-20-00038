@@ -17,7 +17,7 @@ Here `--nproc_per_node` specifies the number of GPUs. By default, the above comm
 ```txt
 python -m torch.distributed.launch --nproc_per_node=3 asvtorch/recipes/voxceleb/xvector/run.py net
 ```
-The best places to change `computing.gpu_ids` setting is in either in the `init_config.py` or `run_configs.py` file of the recipe.
+The best place to change `computing.gpu_ids` setting is in either in the `init_config.py` or `run_configs.py` file of the recipe.
 
 
 ## Concurrent training of multiple models
