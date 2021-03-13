@@ -2,7 +2,7 @@
 
 Neural networks in `voxceleb/xvector` and `sitw/xvector` recipes can be trained using multiple GPUs. The toolkit achieves this by using `DistributedDataParallel` and `torch.distributed.launch` utilities of PyTorch.
 
-MultiGpu training can be started with a command:\
+Multi-GPU training can be started with a command:
 ```txt
 python -m torch.distributed.launch --nproc_per_node=2 asvtorch/recipes/voxceleb/xvector/run.py net
 ```
@@ -12,7 +12,7 @@ python asvtorch/recipes/voxceleb/xvector/run.py net
 ```
 Here `--nproc_per_node` specifies the number of GPUs. By default, the above command will use the first two GPUs that you have (or that are visible as determined by CUDA_VISIBLE_DEVICES environment variable). 
 
-`Settings().computing.gpu_ids` allows you to select which GPUs will be used. For example if you have four GPUs and want to use all except the second GPU, then set `computing.gpu_ids=(0,2,3)` and run
+`Settings().computing.gpu_ids` allows you to select which GPUs will be used. For example, if you have four GPUs and want to use all except the second GPU, then set `computing.gpu_ids=(0,2,3)` and run
 ```txt
 python -m torch.distributed.launch --nproc_per_node=3 asvtorch/recipes/voxceleb/xvector/run.py net
 ```
