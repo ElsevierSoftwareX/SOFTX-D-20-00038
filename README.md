@@ -5,7 +5,7 @@ ASVtorch is a toolkit for automatic speaker recognition.
 ## Main features
 
 - Complete pipelines from audio files to speaker recognition scores
-- Training of deep embedding extractors
+- Multi-GPU training of deep embedding extractors
 - Fast training of i-vector extractor with GPU
 
 ## Requirements
