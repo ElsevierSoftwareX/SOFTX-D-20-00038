@@ -23,7 +23,7 @@ from asvtorch.src.frontend.featureloaders.featureloader import FeatureLoader
 import asvtorch.src.misc.fileutils as fileutils
 
 
-def train_network(training_data: UtteranceList, resume_epoch: int = 0, multigpu: bool = True):
+def train_network(training_data: UtteranceList, resume_epoch: int = 0):
 
     settings = Settings().network
 
@@ -49,7 +49,7 @@ def train_network(training_data: UtteranceList, resume_epoch: int = 0, multigpu:
     net.to(Settings().computing.device)
     net_module = net
     gpu_id = Settings().computing.local_gpu_id
-    if(multigpu and Settings().computing.world_size > 1):
+    if(Settings().computing.world_size > 1):
         net = DistributedDataParallel(net, device_ids=[gpu_id], output_device=gpu_id)
         net_module = net.module
         
